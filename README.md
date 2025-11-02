@@ -1,4 +1,4 @@
-# 🦠 Epidemiological Data Explorer — London 1854
+# 🦠 Epidemiological Data Explorer
 
 ## Context
 
