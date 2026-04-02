@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from src.theme import render_plot_header_html
 from src.i18n import STRINGS
 
 
@@ -19,6 +20,31 @@ def test_english_notebook_uses_shared_normalization_helper():
 def test_streamlit_app_uses_canonical_raw_vegetable_column_name():
     source = (ROOT / "app" / "streamlit_app.py").read_text()
     assert '"Raw Vegetable Consumption"' in source
+
+
+def test_theme_module_defines_design_tokens_and_plot_helpers():
+    source = (ROOT / "src" / "theme.py").read_text()
+    assert "APP_COLORS" in source
+    assert "build_theme_css" in source
+    assert "render_plot_header_html" in source
+    assert "style_axes" in source
+
+
+def test_render_plot_header_html_preserves_safe_basic_markdown_emphasis():
+    html = render_plot_header_html("Title", "Use **bin width** and *compare* carefully.")
+    assert "<strong>bin width</strong>" in html
+    assert "<em>compare</em>" in html
+
+
+def test_streamlit_app_integrates_shared_theme_helpers():
+    source = (ROOT / "app" / "streamlit_app.py").read_text()
+    assert "from src.theme import" in source
+    assert "apply_app_theme" in source
+    assert 'translate("app.hero.eyebrow"' in source
+    assert 'translate("app.hero.chip.explore"' in source
+    assert 'st.markdown(\n                render_plot_header_html(' in source
+    assert "render_plot_header_html" in source
+    assert "style_axes" in source
 
 
 def test_streamlit_app_applies_sidebar_filters_across_multiple_tabs():
@@ -71,11 +97,13 @@ def test_streamlit_app_defines_report_selection_controls():
     assert 'build_report_payload' in source
     assert 'render_report_pdf_safe' in source
     assert 'download_button(' in source
+    assert 'build_sidebar_card_html' in source
     assert 'translate("report.sidebar.title"' in source
     assert 'translate("report.controls.add"' in source
     assert 'translate("report.controls.update"' in source
     assert 'translate("report.controls.replace_button"' in source
     assert 'translate("report.sidebar.remove"' in source
+    assert 'translate("report.sidebar.hint"' in source
     assert 'localize_selected_plot' in source
     assert 'st.sidebar.error(' in source
 

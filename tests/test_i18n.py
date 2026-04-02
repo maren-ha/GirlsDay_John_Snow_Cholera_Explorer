@@ -6,10 +6,9 @@ def test_translate_returns_german_app_title():
     assert translate("app.title", "de") == "Epidemiologischer Daten-Explorer — London 1854"
 
 
-def test_missing_english_key_falls_back_to_german_without_claiming_complete_english_coverage():
-    assert "app.subtitle" not in STRINGS["en"]
-    assert translate("app.subtitle", "en") == translate("app.subtitle", "de")
-    assert translate("app.subtitle", "en") == "Eine kurze Einführung in den Ausbruch von 1854."
+def test_unknown_language_falls_back_to_german_without_claiming_complete_translation_coverage():
+    assert translate("app.subtitle", "fr") == translate("app.subtitle", "de")
+    assert translate("app.subtitle", "fr") == "Eine kurze Einführung in den Ausbruch von 1854."
 
 
 def test_guided_strings_cover_the_sidebar_and_step_copy_in_both_languages():
@@ -50,3 +49,10 @@ def test_report_export_copy_uses_actual_german_labels():
     assert STRINGS["de"]["report.pdf.selected_plots"] == "Ausgewählte Grafiken"
     assert STRINGS["de"]["report.pdf.guided_responses"] == "Geführte Antworten"
     assert STRINGS["de"]["report.pdf.no_plots_selected"] == "Noch keine Grafiken ausgewählt."
+
+
+def test_visual_refresh_copy_is_translated_in_both_languages():
+    assert STRINGS["de"]["app.hero.eyebrow"] == "Klassenraum-Explorer"
+    assert STRINGS["de"]["app.hero.chip.report"] == "PDF-Bericht"
+    assert STRINGS["en"]["app.subtitle"] == "A short introduction to the 1854 outbreak."
+    assert STRINGS["en"]["overview.missing_chart.title"] == "Missing values in the current slice"

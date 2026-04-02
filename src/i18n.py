@@ -2,6 +2,10 @@ STRINGS = {
     "de": {
         "app.title": "Epidemiologischer Daten-Explorer — London 1854",
         "app.subtitle": "Eine kurze Einführung in den Ausbruch von 1854.",
+        "app.hero.eyebrow": "Klassenraum-Explorer",
+        "app.hero.chip.explore": "Erkunden",
+        "app.hero.chip.guided": "Geführte Notizen",
+        "app.hero.chip.report": "PDF-Bericht",
         "app.intro": (
             "**Ausbruch in London (1854).**  \n"
             "Eine ansteckende Krankheit mit Symptomen wie Durchfall, Übelkeit, Erbrechen und starkem Flüssigkeitsverlust. "
@@ -38,6 +42,8 @@ STRINGS = {
         "overview.columns": "Spalten",
         "overview.health_outcome": "Gesundheitsergebnis (gefilterte Häufigkeiten)",
         "overview.missing_note": "**Fehlende Werte** sind in realen Datensätzen normal. Denk bei jeder Grafik daran.",
+        "overview.missing_chart.title": "Fehlende Werte im aktuellen Ausschnitt",
+        "overview.missing_chart.caption": "Diese kleine Übersicht zeigt, in welchen Spalten im gefilterten Datenausschnitt noch Lücken stecken.",
         "overview.missing_ylabel": "Fehlend",
         "distributions.subtitle": "Verteilung möglicher Risikofaktoren - Gesundheitszustand hervorheben",
         "distributions.caption": "Wähle eine Variable. Wenn sie kontinuierlich ist, bilden wir Klassen - die **Bin-Breite** ist also wichtig. Das ist explorativ.",
@@ -165,6 +171,11 @@ STRINGS = {
     },
     "en": {
         "app.title": "Epidemiological Data Explorer — London 1854",
+        "app.subtitle": "A short introduction to the 1854 outbreak.",
+        "app.hero.eyebrow": "Classroom explorer",
+        "app.hero.chip.explore": "Explore",
+        "app.hero.chip.guided": "Guided notes",
+        "app.hero.chip.report": "PDF report",
         "app.intro": (
             "**Outbreak in London (1854).**  \n"
             "An infectious disease with symptoms such as diarrhea, nausea, vomiting, and severe fluid loss. Within a few days, hundreds fall ill; many die. "
@@ -199,6 +210,8 @@ STRINGS = {
         "overview.columns": "Columns",
         "overview.health_outcome": "Health outcome (filtered counts)",
         "overview.missing_note": "**Missing values** are common in real datasets. Keep them in mind when interpreting any plot.",
+        "overview.missing_chart.title": "Missing values in the current slice",
+        "overview.missing_chart.caption": "This quick summary shows which columns still have gaps in the filtered data you are working with.",
         "overview.missing_ylabel": "Missing",
         "distributions.subtitle": "Distribution of potential risk factors - highlight health status",
         "distributions.caption": "Select a variable. If it’s continuous, we bin it - so **bin width matters**. This is exploratory.",

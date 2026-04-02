@@ -37,6 +37,15 @@ from src.data_schema import (
     localize_dataframe_columns,
     normalize_dataframe,
 )
+from src.theme import (
+    HEATMAP_CMAP,
+    apply_app_theme,
+    build_hero_html,
+    build_sidebar_card_html,
+    build_theme_css,
+    render_plot_header_html,
+    style_axes,
+)
 
 
 DISPLAY_VALUE_COLUMNS = (
@@ -203,14 +212,18 @@ def replace_report_plot(plot_id, plot_entry):
 
 def render_report_sidebar(app_language):
     selected_plots = st.session_state["selected_plots"]
-    st.sidebar.subheader(translate("report.sidebar.title", app_language))
-    st.sidebar.caption(
-        translate("report.sidebar.selected_count", app_language).format(
-            count=len(selected_plots),
-            max_plots=MAX_REPORT_PLOTS,
-        )
+    st.sidebar.markdown(
+        build_sidebar_card_html(
+            translate("report.sidebar.title", app_language),
+            translate("report.sidebar.selected_count", app_language).format(
+                count=len(selected_plots),
+                max_plots=MAX_REPORT_PLOTS,
+            ),
+            note=translate("report.sidebar.hint", app_language),
+            accent=True,
+        ),
+        unsafe_allow_html=True,
     )
-    st.sidebar.caption(translate("report.sidebar.hint", app_language))
 
     report_error = st.session_state["report_ready_state"].get("last_error")
     if report_error:
@@ -309,12 +322,39 @@ def build_selected_plot_parameters(plot_type, **parameters):
 
 
 def render_guided_sidebar(app_language):
-    st.sidebar.subheader(translate("guided.sidebar.title", app_language))
+    guided_step_id = get_current_guided_step(st.session_state)
+    guided_step = get_step_by_id(guided_step_id) or GUIDED_STEPS[0]
+    guided_answers = st.session_state["guided_answers"]
+    completed_steps = count_completed_steps(guided_answers)
+    total_steps = len(GUIDED_STEPS)
+    step_title = translate(guided_step["title_msg_id"], app_language)
+    guided_enabled = st.session_state["guided_mode_enabled"]
+    guided_body = (
+        translate("guided.sidebar.disabled", app_language)
+        if not guided_enabled
+        else translate("guided.sidebar.current_step", app_language).format(step=step_title)
+    )
+    guided_note = (
+        translate("guided.sidebar.empty_state", app_language)
+        if not guided_enabled
+        else translate("guided.sidebar.completed_steps", app_language).format(
+            completed=completed_steps,
+            total=total_steps,
+        )
+    )
+
+    st.sidebar.markdown(
+        build_sidebar_card_html(
+            translate("guided.sidebar.title", app_language),
+            guided_body,
+            note=guided_note,
+            accent=guided_enabled,
+        ),
+        unsafe_allow_html=True,
+    )
     st.sidebar.checkbox(translate("guided.sidebar.enabled", app_language), key="guided_mode_enabled")
 
     if not st.session_state["guided_mode_enabled"]:
-        st.sidebar.caption(translate("guided.sidebar.disabled", app_language))
-        st.sidebar.markdown(translate("guided.sidebar.empty_state", app_language))
         return
 
     st.sidebar.text_input(
@@ -325,13 +365,6 @@ def render_guided_sidebar(app_language):
         translate("guided.sidebar.group_name", app_language),
         key="group_name",
     )
-
-    guided_step_id = get_current_guided_step(st.session_state)
-    guided_step = get_step_by_id(guided_step_id) or GUIDED_STEPS[0]
-    guided_answers = st.session_state["guided_answers"]
-    completed_steps = count_completed_steps(guided_answers)
-    total_steps = len(GUIDED_STEPS)
-    step_title = translate(guided_step["title_msg_id"], app_language)
 
     st.sidebar.caption(
         translate("guided.sidebar.current_step", app_language).format(step=step_title)
@@ -394,8 +427,36 @@ def display_option(category, value, language):
 def main():
     app_language = build_app_language()
     st.set_page_config(page_title=translate("app.title", app_language), layout="wide")
+    apply_app_theme()
+    st.markdown(build_theme_css(), unsafe_allow_html=True)
 
-    st.title(f"🦠 {translate('app.title', app_language)}")
+    st.markdown(
+        build_hero_html(
+            translate("app.title", app_language),
+            translate("app.subtitle", app_language),
+            translate("app.focus", app_language),
+            eyebrow=translate("app.hero.eyebrow", app_language),
+            chips=[
+                translate("app.hero.chip.explore", app_language),
+                translate("app.hero.chip.guided", app_language),
+                translate("app.hero.chip.report", app_language),
+            ],
+        ),
+        unsafe_allow_html=True,
+    )
+    intro_left, intro_right = st.columns([1.35, 0.85], gap="large")
+    with intro_left:
+        st.markdown(translate("app.intro", app_language))
+    with intro_right:
+        st.markdown(
+            build_sidebar_card_html(
+                translate("app.subtitle", app_language),
+                translate("app.focus", app_language),
+                accent=True,
+            ),
+            unsafe_allow_html=True,
+        )
+
     st.sidebar.selectbox(
         translate("sidebar.language", app_language),
         ["de", "en"],
@@ -403,12 +464,10 @@ def main():
         format_func=lambda value: translate(f"language.{value}", app_language),
     )
     app_language = st.session_state["language"]
+    st.sidebar.divider()
 
     render_guided_sidebar(app_language)
     render_report_sidebar(app_language)
-
-    st.markdown(translate("app.intro", app_language))
-    st.info(translate("app.focus", app_language))
 
     # ---------- Data ----------
     df, data_path = load_data()
@@ -498,7 +557,7 @@ def main():
         filtered_display_df = localize_dataframe_columns(localize_dataframe(filtered_df.head(20), app_language), app_language)
         c1, c2 = st.columns([2, 1])
         with c1:
-            st.dataframe(filtered_display_df)
+            st.dataframe(filtered_display_df, use_container_width=True)
         with c2:
             st.metric(translate("common.filtered_rows", app_language), len(filtered_df))
             st.metric(translate("common.total_rows", app_language), len(df))
@@ -510,18 +569,34 @@ def main():
 
         miss = filtered_df.isna().sum().sort_values(ascending=False)
         if miss.sum() > 0:
-            fig, ax = plt.subplots(figsize=(8, 3))
+            st.markdown(
+                render_plot_header_html(
+                    translate("overview.missing_chart.title", app_language),
+                    translate("overview.missing_chart.caption", app_language),
+                    eyebrow=translate("tab.overview", app_language),
+                ),
+                unsafe_allow_html=True,
+            )
+            fig, ax = plt.subplots(figsize=(8, 3), constrained_layout=True)
             miss_display = miss.copy()
             miss_display.index = localize_column_labels(miss_display.index, app_language)
             ax.bar(miss_display.index, miss_display.values)
             ax.set_xticklabels(miss_display.index, rotation=45, ha="right")
             ax.set_ylabel(translate("overview.missing_ylabel", app_language))
-            st.pyplot(fig)
+            style_axes(ax)
+            st.pyplot(fig, use_container_width=True)
 
     # ---------- Distributions (stacked histogram / bar) ----------
     with tab_dist:
         st.subheader(translate("distributions.subtitle", app_language))
-        st.caption(translate("distributions.caption", app_language))
+        st.markdown(
+            render_plot_header_html(
+                translate("distributions.title", app_language),
+                translate("distributions.caption", app_language),
+                eyebrow=translate("tab.distributions", app_language),
+            ),
+            unsafe_allow_html=True,
+        )
         exclude = {"ID", "Home Location X", "Home Location Y"}
         candidates = [c for c in df.columns if c not in exclude]
         var = st.selectbox(
@@ -535,7 +610,7 @@ def main():
         if var not in d.columns or "Health Status" not in d.columns:
             st.info(translate("distributions.need_variable", app_language))
         else:
-            fig, ax = plt.subplots(figsize=(9, 5))
+            fig, ax = plt.subplots(figsize=(9, 5), constrained_layout=True)
             if pd.api.types.is_numeric_dtype(d[var]):
                 groups = [g[var].dropna().values for _, g in d.groupby("Health Status")]
                 labels = [get_display_label("Health Status", s, app_language) for s, _ in d.groupby("Health Status")]
@@ -549,9 +624,9 @@ def main():
                 grouped.plot(kind="bar", stacked=True, ax=ax)
                 ax.set_xlabel(format_axis_label(var, app_language))
                 ax.set_ylabel(translate("common.count", app_language))
-            ax.set_title(translate("distributions.title", app_language))
             ax.legend(title=translate("common.health_status", app_language))
-            st.pyplot(fig)
+            style_axes(ax)
+            st.pyplot(fig, use_container_width=True)
             distribution_parameters = build_selected_plot_parameters(
                 "distribution",
                 variable=var,
@@ -580,6 +655,14 @@ def main():
     # ---------- Heatmap (compare two variables, with binning for continuous) ----------
     with tab_heat:
         st.subheader(translate("heatmap.subtitle", app_language))
+        st.markdown(
+            render_plot_header_html(
+                translate("heatmap.subtitle", app_language),
+                translate("heatmap.caption", app_language),
+                eyebrow=translate("tab.heatmap", app_language),
+            ),
+            unsafe_allow_html=True,
+        )
         options = [c for c in df.columns if c not in exclude and c != "Health Status"]
         if len(options) < 2:
             st.info(translate("heatmap.need_two", app_language))
@@ -608,11 +691,12 @@ def main():
                 pv_display = pv.copy()
                 pv_display.index = localize_category_labels(y, pv_display.index, app_language) if not pd.api.types.is_numeric_dtype(d[y]) else pv_display.index
                 pv_display.columns = localize_category_labels(x, pv_display.columns, app_language) if not pd.api.types.is_numeric_dtype(d[x]) else pv_display.columns
-                fig, ax = plt.subplots(figsize=(8, 6))
-                sns.heatmap(pv_display, annot=True, fmt="d", cmap="coolwarm", ax=ax)
+                fig, ax = plt.subplots(figsize=(8, 6), constrained_layout=True)
+                sns.heatmap(pv_display, annot=True, fmt="d", cmap=HEATMAP_CMAP, ax=ax)
                 ax.set_xlabel(format_axis_label(x, app_language))
                 ax.set_ylabel(format_axis_label(y, app_language))
-                st.pyplot(fig)
+                style_axes(ax, grid=False)
+                st.pyplot(fig, use_container_width=True)
                 heatmap_parameters = build_selected_plot_parameters(
                     "heatmap",
                     x=x,
@@ -636,12 +720,18 @@ def main():
                     fig,
                 )
                 plt.close(fig)
-        st.caption(translate("heatmap.caption", app_language))
 
     # ---------- Scatter (no binning) ----------
     with tab_scatter:
         st.subheader(translate("scatter.subtitle", app_language))
-        st.caption(translate("scatter.caption", app_language))
+        st.markdown(
+            render_plot_header_html(
+                translate("scatter.title", app_language),
+                translate("scatter.caption", app_language),
+                eyebrow=translate("tab.scatter", app_language),
+            ),
+            unsafe_allow_html=True,
+        )
         numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
         if len(numeric_cols) < 2:
             st.info(translate("scatter.need_two", app_language))
@@ -660,7 +750,7 @@ def main():
                 format_func=lambda value: format_column_option(value, app_language),
             )
             d = apply_filters(df).dropna(subset=[x, y]).copy()
-            fig, ax = plt.subplots(figsize=(9, 5))
+            fig, ax = plt.subplots(figsize=(9, 5), constrained_layout=True)
             if "Health Status" in d.columns:
                 for status, sub in d.groupby("Health Status"):
                     ax.scatter(sub[x], sub[y], alpha=0.65, label=get_display_label("Health Status", status, app_language))
@@ -669,8 +759,8 @@ def main():
                 ax.scatter(d[x], d[y], alpha=0.65)
             ax.set_xlabel(format_axis_label(x, app_language))
             ax.set_ylabel(format_axis_label(y, app_language))
-            ax.set_title(translate("scatter.title", app_language))
-            st.pyplot(fig)
+            style_axes(ax)
+            st.pyplot(fig, use_container_width=True)
             scatter_parameters = build_selected_plot_parameters(
                 "scatter",
                 x=x,
