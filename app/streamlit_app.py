@@ -16,6 +16,14 @@ from src.guided_mode import (
     is_step_complete,
     update_guided_answer,
 )
+from src.reporting import (
+    MAX_REPORT_PLOTS,
+    build_report_plot_entry,
+    build_report_plot_id,
+    remove_selected_plot,
+    replace_selected_plot,
+    upsert_selected_plot,
+)
 from src.i18n import translate
 from src.data_schema import (
     DATA_DIR,
@@ -116,6 +124,135 @@ def sync_guided_answer(field_id, widget_key):
     update_guided_answer(st.session_state, field_id, st.session_state[widget_key])
 
 
+def set_report_selected_plots(selected_plots):
+    st.session_state["selected_plots"] = selected_plots
+
+
+def set_report_error(message):
+    st.session_state["report_ready_state"]["last_error"] = message
+
+
+def clear_report_error():
+    set_report_error(None)
+
+
+def save_report_plot(plot_entry):
+    try:
+        set_report_selected_plots(upsert_selected_plot(st.session_state["selected_plots"], plot_entry))
+        clear_report_error()
+        rerun_app()
+    except ValueError as exc:
+        set_report_error(str(exc))
+
+
+def remove_report_plot(plot_id):
+    set_report_selected_plots(remove_selected_plot(st.session_state["selected_plots"], plot_id))
+    clear_report_error()
+    rerun_app()
+
+
+def replace_report_plot(plot_id, plot_entry):
+    try:
+        set_report_selected_plots(replace_selected_plot(st.session_state["selected_plots"], plot_id, plot_entry))
+        clear_report_error()
+        rerun_app()
+    except ValueError as exc:
+        set_report_error(str(exc))
+
+
+def render_report_sidebar(app_language):
+    selected_plots = st.session_state["selected_plots"]
+    st.sidebar.subheader(translate("report.sidebar.title", app_language))
+    st.sidebar.caption(
+        translate("report.sidebar.selected_count", app_language).format(
+            count=len(selected_plots),
+            max_plots=MAX_REPORT_PLOTS,
+        )
+    )
+    st.sidebar.caption(translate("report.sidebar.hint", app_language))
+
+    report_error = st.session_state["report_ready_state"].get("last_error")
+    if report_error:
+        st.sidebar.error(translate("report.error.prefix", app_language).format(message=report_error))
+
+    if not selected_plots:
+        st.sidebar.info(translate("report.sidebar.empty", app_language))
+        return
+
+    for plot in selected_plots:
+        st.sidebar.markdown(f"**{plot['title']}**")
+        st.sidebar.caption(f"{plot['plot_type']} • {plot['caption']}")
+        st.sidebar.caption(
+            ", ".join(f"{key}: {value}" for key, value in plot["parameters"].items())
+            or translate("report.sidebar.no_parameters", app_language)
+        )
+        st.sidebar.button(
+            translate("report.sidebar.remove", app_language),
+            key=f"report_remove_{plot['plot_id']}",
+            on_click=remove_report_plot,
+            args=(plot["plot_id"],),
+        )
+        st.sidebar.divider()
+
+
+def render_report_plot_controls(app_language, plot_type, title, caption, parameters, fig):
+    plot_id = build_report_plot_id(plot_type, parameters)
+    selected_plots = st.session_state["selected_plots"]
+    selected_plot_ids = [plot["plot_id"] for plot in selected_plots]
+
+    def current_plot_entry():
+        return build_report_plot_entry(
+            plot_id=plot_id,
+            plot_type=plot_type,
+            title=title,
+            caption=caption,
+            parameters=parameters,
+            fig=fig,
+        )
+
+    if plot_id in selected_plot_ids:
+        if st.button(
+            translate("report.controls.update", app_language),
+            key=f"report_update_{plot_id}",
+        ):
+            save_report_plot(current_plot_entry())
+        return
+
+    if len(selected_plots) < MAX_REPORT_PLOTS:
+        if st.button(
+            translate("report.controls.add", app_language),
+            key=f"report_add_{plot_id}",
+        ):
+            save_report_plot(current_plot_entry())
+        return
+
+    replacement_options = selected_plot_ids
+    replacement_labels = {
+        plot["plot_id"]: f"{plot['title']} ({plot['plot_type']})" for plot in selected_plots
+    }
+    replacement_target = st.selectbox(
+        translate("report.controls.replace_label", app_language),
+        replacement_options,
+        key=f"report_replace_target_{plot_id}",
+        format_func=lambda value: replacement_labels.get(value, value),
+    )
+    if st.button(
+        translate("report.controls.replace_button", app_language),
+        key=f"report_replace_{plot_id}",
+    ):
+        replace_report_plot(replacement_target, current_plot_entry())
+
+
+def build_selected_plot_parameters(plot_type, **parameters):
+    filters = parameters.get("filters", {})
+    other_parameters = {key: value for key, value in parameters.items() if key != "filters"}
+    return {
+        "plot_type": plot_type,
+        "filters": filters,
+        **other_parameters,
+    }
+
+
 def render_guided_sidebar(app_language):
     st.sidebar.subheader(translate("guided.sidebar.title", app_language))
     st.sidebar.checkbox(translate("guided.sidebar.enabled", app_language), key="guided_mode_enabled")
@@ -213,6 +350,8 @@ def main():
     app_language = st.session_state["language"]
 
     render_guided_sidebar(app_language)
+    render_report_sidebar(app_language)
+    render_report_sidebar()
 
     st.markdown(translate("app.intro", app_language))
     st.info(translate("app.focus", app_language))
@@ -359,6 +498,28 @@ def main():
             ax.set_title(translate("distributions.title", app_language))
             ax.legend(title=translate("common.health_status", app_language))
             st.pyplot(fig)
+            distribution_parameters = build_selected_plot_parameters(
+                "distribution",
+                variable=var,
+                bins=bins,
+                filters={
+                    "age_range": list(age_range),
+                    "gender": gender,
+                    "occupation": occupation,
+                    "household_size": hh_cat,
+                    "raw_veg": raw_veg,
+                    "nearest_pump": nearest_pump,
+                },
+            )
+            render_report_plot_controls(
+                app_language,
+                "distribution",
+                translate("distributions.title", app_language),
+                translate("distributions.caption", app_language),
+                distribution_parameters,
+                fig,
+            )
+            plt.close(fig)
 
         st.markdown(translate("distributions.discuss", app_language))
 
@@ -398,6 +559,29 @@ def main():
                 ax.set_xlabel(format_axis_label(x, app_language))
                 ax.set_ylabel(format_axis_label(y, app_language))
                 st.pyplot(fig)
+                heatmap_parameters = build_selected_plot_parameters(
+                    "heatmap",
+                    x=x,
+                    y=y,
+                    bins=bins,
+                    filters={
+                        "age_range": list(age_range),
+                        "gender": gender,
+                        "occupation": occupation,
+                        "household_size": hh_cat,
+                        "raw_veg": raw_veg,
+                        "nearest_pump": nearest_pump,
+                    },
+                )
+                render_report_plot_controls(
+                    app_language,
+                    "heatmap",
+                    translate("heatmap.subtitle", app_language),
+                    translate("heatmap.caption", app_language),
+                    heatmap_parameters,
+                    fig,
+                )
+                plt.close(fig)
         st.caption(translate("heatmap.caption", app_language))
 
     # ---------- Scatter (no binning) ----------
@@ -433,6 +617,28 @@ def main():
             ax.set_ylabel(format_axis_label(y, app_language))
             ax.set_title(translate("scatter.title", app_language))
             st.pyplot(fig)
+            scatter_parameters = build_selected_plot_parameters(
+                "scatter",
+                x=x,
+                y=y,
+                filters={
+                    "age_range": list(age_range),
+                    "gender": gender,
+                    "occupation": occupation,
+                    "household_size": hh_cat,
+                    "raw_veg": raw_veg,
+                    "nearest_pump": nearest_pump,
+                },
+            )
+            render_report_plot_controls(
+                app_language,
+                "scatter",
+                translate("scatter.subtitle", app_language),
+                translate("scatter.caption", app_language),
+                scatter_parameters,
+                fig,
+            )
+            plt.close(fig)
 
         st.markdown(translate("scatter.discuss", app_language))
 

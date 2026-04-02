@@ -60,6 +60,21 @@ def test_streamlit_app_defines_guided_mode_sidebar_controls():
     assert 'st.sidebar.button' in source
 
 
+def test_streamlit_app_defines_report_selection_controls():
+    source = (ROOT / "app" / "streamlit_app.py").read_text()
+    assert 'selected_plots' in source
+    assert 'MAX_REPORT_PLOTS' in source
+    assert 'build_report_plot_entry' in source
+    assert 'build_report_plot_id' in source
+    assert 'render_report_sidebar' in source
+    assert 'translate("report.sidebar.title"' in source
+    assert 'translate("report.controls.add"' in source
+    assert 'translate("report.controls.update"' in source
+    assert 'translate("report.controls.replace_button"' in source
+    assert 'translate("report.sidebar.remove"' in source
+    assert 'st.sidebar.error(' in source
+
+
 def test_streamlit_app_loader_does_not_silently_swallow_all_errors():
     source = (ROOT / "app" / "streamlit_app.py").read_text()
     assert "except Exception" not in source
