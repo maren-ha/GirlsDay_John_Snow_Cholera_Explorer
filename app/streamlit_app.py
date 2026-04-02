@@ -18,12 +18,15 @@ from src.guided_mode import (
 )
 from src.reporting import (
     MAX_REPORT_PLOTS,
+    build_report_payload,
     build_report_plot_entry,
     build_report_plot_id,
+    localize_selected_plot,
     remove_selected_plot,
     replace_selected_plot,
     upsert_selected_plot,
 )
+from src.report_pdf import render_report_pdf_safe
 from src.i18n import translate
 from src.data_schema import (
     DATA_DIR,
@@ -128,12 +131,50 @@ def set_report_selected_plots(selected_plots):
     st.session_state["selected_plots"] = selected_plots
 
 
-def set_report_error(message):
-    st.session_state["report_ready_state"]["last_error"] = message
+def _get_report_ready_state(state=None):
+    state = st.session_state if state is None else state
+    report_ready_state = state.get("report_ready_state")
+    if not isinstance(report_ready_state, dict):
+        report_ready_state = {"last_error": None, "last_export_language": None}
+        state["report_ready_state"] = report_ready_state
+        return report_ready_state
+
+    report_ready_state.setdefault("last_error", None)
+    report_ready_state.setdefault("last_export_language", None)
+    return report_ready_state
 
 
-def clear_report_error():
-    set_report_error(None)
+def set_report_error(message, state=None):
+    _get_report_ready_state(state)["last_error"] = message
+
+
+def clear_report_error(state=None):
+    set_report_error(None, state)
+
+
+def build_report_pdf_bytes(app_language, state=None):
+    state = st.session_state if state is None else state
+    report_ready_state = _get_report_ready_state(state)
+    try:
+        export_payload = build_report_payload(
+            language=app_language,
+            guided_answers=state.get("guided_answers", {}),
+            selected_plots=state.get("selected_plots", []),
+            student_name=state.get("student_name", ""),
+            group_name=state.get("group_name", ""),
+        )
+    except ValueError as exc:
+        set_report_error(str(exc), state)
+        return None
+
+    pdf_bytes, error_message = render_report_pdf_safe(export_payload)
+    if error_message:
+        set_report_error(error_message, state)
+        return None
+
+    report_ready_state["last_export_language"] = app_language
+    clear_report_error(state)
+    return pdf_bytes
 
 
 def save_report_plot(plot_entry):
@@ -177,22 +218,32 @@ def render_report_sidebar(app_language):
 
     if not selected_plots:
         st.sidebar.info(translate("report.sidebar.empty", app_language))
-        return
 
     for plot in selected_plots:
-        st.sidebar.markdown(f"**{plot['title']}**")
-        st.sidebar.caption(f"{plot['plot_type']} • {plot['caption']}")
+        localized_plot = localize_selected_plot(plot, app_language)
+        st.sidebar.markdown(f"**{localized_plot['title_text']}**")
+        st.sidebar.caption(f"{localized_plot['plot_type_label']} • {localized_plot['caption_text']}")
         st.sidebar.caption(
-            ", ".join(f"{key}: {value}" for key, value in plot["parameters"].items())
+            ", ".join(f"{key}: {value}" for key, value in localized_plot["parameters"].items())
             or translate("report.sidebar.no_parameters", app_language)
         )
         st.sidebar.button(
             translate("report.sidebar.remove", app_language),
-            key=f"report_remove_{plot['plot_id']}",
+            key=f"report_remove_{localized_plot['plot_id']}",
             on_click=remove_report_plot,
-            args=(plot["plot_id"],),
+            args=(localized_plot["plot_id"],),
         )
         st.sidebar.divider()
+
+    export_pdf_bytes = build_report_pdf_bytes(app_language)
+    if export_pdf_bytes is not None:
+        st.sidebar.download_button(
+            translate("report.download.button", app_language),
+            data=export_pdf_bytes,
+            file_name="report.pdf",
+            mime="application/pdf",
+            key="report_download_pdf",
+        )
 
 
 def render_report_plot_controls(app_language, plot_type, title, caption, parameters, fig):
@@ -228,7 +279,11 @@ def render_report_plot_controls(app_language, plot_type, title, caption, paramet
 
     replacement_options = selected_plot_ids
     replacement_labels = {
-        plot["plot_id"]: f"{plot['title']} ({plot['plot_type']})" for plot in selected_plots
+        plot["plot_id"]: (
+            f"{localized_plot['title_text']} ({localized_plot['plot_type_label']})"
+        )
+        for plot in selected_plots
+        for localized_plot in [localize_selected_plot(plot, app_language)]
     }
     replacement_target = st.selectbox(
         translate("report.controls.replace_label", app_language),
@@ -351,7 +406,6 @@ def main():
 
     render_guided_sidebar(app_language)
     render_report_sidebar(app_language)
-    render_report_sidebar()
 
     st.markdown(translate("app.intro", app_language))
     st.info(translate("app.focus", app_language))

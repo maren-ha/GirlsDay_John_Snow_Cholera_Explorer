@@ -43,3 +43,10 @@ def test_guided_strings_cover_the_sidebar_and_step_copy_in_both_languages():
 
 def test_default_language_is_german():
     assert get_default_language() == "de"
+
+
+def test_report_export_copy_uses_actual_german_labels():
+    assert STRINGS["de"]["report.pdf.student_label"] == "Schülername:"
+    assert STRINGS["de"]["report.pdf.selected_plots"] == "Ausgewählte Grafiken"
+    assert STRINGS["de"]["report.pdf.guided_responses"] == "Geführte Antworten"
+    assert STRINGS["de"]["report.pdf.no_plots_selected"] == "Noch keine Grafiken ausgewählt."

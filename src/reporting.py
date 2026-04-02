@@ -4,6 +4,7 @@ from io import BytesIO
 import json
 
 from src.guided_mode import GUIDED_STEPS
+from src.i18n import translate
 
 
 MAX_REPORT_PLOTS = 4
@@ -17,6 +18,20 @@ REQUIRED_SELECTED_PLOT_KEYS = (
     "image_bytes",
     "mime_type",
 )
+REPORT_PLOT_COPY_KEYS = {
+    "distribution": {
+        "title_msg_id": "distributions.title",
+        "caption_msg_id": "distributions.caption",
+    },
+    "heatmap": {
+        "title_msg_id": "heatmap.subtitle",
+        "caption_msg_id": "heatmap.caption",
+    },
+    "scatter": {
+        "title_msg_id": "scatter.subtitle",
+        "caption_msg_id": "scatter.caption",
+    },
+}
 
 
 def _ensure_supported_plot_type(plot_type):
@@ -91,6 +106,24 @@ def _normalize_selected_plot(plot):
     }
 
 
+def localize_selected_plot(plot, language):
+    normalized_plot = _normalize_selected_plot(plot)
+    copy_keys = REPORT_PLOT_COPY_KEYS.get(normalized_plot["plot_type"], {})
+    title_msg_id = copy_keys.get("title_msg_id")
+    caption_msg_id = copy_keys.get("caption_msg_id")
+    plot_type_label = translate(f"report.plot_type.{normalized_plot['plot_type']}", language)
+
+    localized_plot = deepcopy(normalized_plot)
+    localized_plot["title_text"] = (
+        translate(title_msg_id, language) if title_msg_id else normalized_plot["title"]
+    )
+    localized_plot["caption_text"] = (
+        translate(caption_msg_id, language) if caption_msg_id else normalized_plot["caption"]
+    )
+    localized_plot["plot_type_label"] = plot_type_label
+    return localized_plot
+
+
 def normalize_selected_plots(selected_plots):
     normalized_plots = []
     for plot in selected_plots or []:
@@ -156,18 +189,39 @@ def replace_selected_plot(selected_plots, plot_id, replacement_plot):
 def build_report_payload(language, guided_answers, selected_plots, student_name, group_name):
     normalized_guided_answers = deepcopy(guided_answers) if isinstance(guided_answers, dict) else {}
     normalized_selected_plots = normalize_selected_plots(selected_plots)
+    localized_selected_plots = [localize_selected_plot(plot, language) for plot in normalized_selected_plots]
     report_sections = []
 
     for step in GUIDED_STEPS:
         field_ids = [field["field_id"] for field in step["fields"]]
         answers = {field_id: normalized_guided_answers.get(field_id, "") for field_id in field_ids}
+        fields = []
+        field_labels = {}
+
+        for field in step["fields"]:
+            field_answer = answers.get(field["field_id"], "")
+            field_label = translate(field["label_msg_id"], language)
+            field_labels[field["field_id"]] = field_label
+            fields.append(
+                {
+                    "field_id": field["field_id"],
+                    "label_msg_id": field["label_msg_id"],
+                    "label_text": field_label,
+                    "answer": field_answer,
+                }
+            )
+
         report_sections.append(
             {
                 "step_id": step["step_id"],
                 "title_msg_id": step["title_msg_id"],
+                "title_text": translate(step["title_msg_id"], language),
                 "prompt_msg_id": step["prompt_msg_id"],
+                "prompt_text": translate(step["prompt_msg_id"], language),
                 "report_section": step["report_section"],
                 "field_ids": field_ids,
+                "field_labels": field_labels,
+                "fields": fields,
                 "answers": answers,
                 "answer": answers[field_ids[0]] if len(field_ids) == 1 else answers,
             }
@@ -179,7 +233,7 @@ def build_report_payload(language, guided_answers, selected_plots, student_name,
         "group_name": group_name or "",
         "guided_answers": normalized_guided_answers,
         "report_sections": report_sections,
-        "selected_plots": normalized_selected_plots,
-        "selected_plot_count": len(normalized_selected_plots),
-        "selected_plot_ids": [plot["plot_id"] for plot in normalized_selected_plots],
+        "selected_plots": localized_selected_plots,
+        "selected_plot_count": len(localized_selected_plots),
+        "selected_plot_ids": [plot["plot_id"] for plot in localized_selected_plots],
     }

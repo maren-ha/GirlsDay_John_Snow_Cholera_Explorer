@@ -67,11 +67,16 @@ def test_streamlit_app_defines_report_selection_controls():
     assert 'build_report_plot_entry' in source
     assert 'build_report_plot_id' in source
     assert 'render_report_sidebar' in source
+    assert 'build_report_pdf_bytes' in source
+    assert 'build_report_payload' in source
+    assert 'render_report_pdf_safe' in source
+    assert 'download_button(' in source
     assert 'translate("report.sidebar.title"' in source
     assert 'translate("report.controls.add"' in source
     assert 'translate("report.controls.update"' in source
     assert 'translate("report.controls.replace_button"' in source
     assert 'translate("report.sidebar.remove"' in source
+    assert 'localize_selected_plot' in source
     assert 'st.sidebar.error(' in source
 
 

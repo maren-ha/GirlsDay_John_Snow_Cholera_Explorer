@@ -7,3 +7,4 @@ jupyter
 ipywidgets
 scikit-learn
 seaborn
+reportlab

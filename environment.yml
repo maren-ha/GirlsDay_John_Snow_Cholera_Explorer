@@ -9,6 +9,7 @@ dependencies:
   - scikit-learn=1.4.*
   - matplotlib
   - seaborn
+  - reportlab
   - streamlit
   - jupyter
   - ipywidgets
