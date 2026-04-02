@@ -1,4 +1,4 @@
-#%% 
+#%%
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -6,8 +6,10 @@ import ipywidgets as widgets
 from IPython.display import display
 import numpy as np
 
+from src.data_schema import DATA_DIR, normalize_dataframe
+
 # Load dataset
-df = pd.read_csv('../data/cholera_dataset.csv')
+df = normalize_dataframe(pd.read_csv(DATA_DIR / 'cholera_dataset.csv'))
 
 # Widget elements
 age_slider = widgets.IntRangeSlider(
@@ -113,7 +115,7 @@ def update_scatter_plot(age_range, gender, occupation, pump, household_size_cate
     if household_size_category != 'All':
         filtered_df = filtered_df[filtered_df['Household Size Category'] == household_size_category]
     if raw_vegetables != 'All':
-        filtered_df = filtered_df[filtered_df['Raw Vegetables'] == raw_vegetables]
+        filtered_df = filtered_df[filtered_df['Raw Vegetable Consumption'] == raw_vegetables]
     if nearest_pump != 'All':
         filtered_df = filtered_df[filtered_df['Nearest Pump'] == nearest_pump]
     
@@ -146,14 +148,3 @@ display(widgets.interactive(update_scatter_plot,
                             raw_vegetables=raw_veggies_dropdown, 
                             nearest_pump=nearest_pump_dropdown)
                             )
-
-
-# calculate a statistical test to see if the distance to Pump B is significantly different from Pump A
-
-#from scipy import stats
-# Filter the DataFrame for the two pumps
-#pump_a_distances = df['Distance to Pump A'].dropna()
-#pump_b_distances = df['Distance to Pump B'].dropna()
-# Perform an independent t-test
-#t_stat, p_value = stats.ttest_ind(pump_a_distances, pump_b_distances)
-#print(f"T-statistic: {t_stat}, P-value: {p_value}")

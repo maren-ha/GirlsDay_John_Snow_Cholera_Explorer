@@ -51,6 +51,7 @@ Write your hypothesis here:
 
 Go to the **Hypothesis & stats** tab:
 - Which statistical tests are shown?  
+  _You should now see a **Chi-squared** test and a simple **Logistic regression**._
 - What do they tell you about **association** between factors and disease?  
 - What does “correlation ≠ causation” mean in this context?  
   _(Can you think of other explanations for the pattern you saw? - Where could confounding be hiding?)_

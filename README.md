@@ -26,7 +26,7 @@ There are four tasks in the investigation: Population dynamics simulation, Analy
 3) **Scatter (no binning)** More fine-grained view: two continuous variables as axes, **color-coded by disease status**. Use filters to see patterns strengthen.
 
 **From visuals → hypothesis:** What pattern looks most plausible?  
-**Confirm with statistics:** keep in mind we can test correlation, not causation. Then do simple tests/models (chi-squared, t-test, logistic with an interaction). Keep **confounding** in mind (e.g., a superspreader event near one pump could mimic a distance effect).
+**Confirm with statistics:** keep in mind we can test correlation, not causation. Then do simple tests/models such as a **chi-squared test** for illness vs. nearest pump and a **logistic regression** using age and distance. Keep **confounding** in mind (e.g., a superspreader event near one pump could mimic a distance effect).
 
 ## For Educators
 
@@ -34,7 +34,10 @@ The repository is designed to support exploratory data-driven learning and disco
 
 - The **Streamlit app** provides an interactive exploration environment for students.
 - The **worksheet** (Markdown) guides group discussions and helps structure the learning process.
-- The dataset is **synthetic**, allowing safe experimentation while illustrating real-world reasoning challenges in epidemiology. It can be re-generated or modified with the script in `src/generate_data.py`
+- The dataset is **synthetic**, allowing safe experimentation while illustrating real-world reasoning challenges in epidemiology.
+- The repository ships with both English and German CSVs in `data/`.
+- The Streamlit app normalizes English and German column names internally, so either dataset can be loaded through the same interface.
+- The data can be re-generated or modified with `src/generate_data.py` and `src/generate_data_de.py`.
 
 ## Inspiration
 
@@ -45,13 +48,13 @@ Participants explore, hypothesize, and test ideas about how the disease spreads,
 ## Repository Overview
 
 - `app`: contains the `streamlit_app.py` interactive app 
-- `data`: contains the synthetic dataset `cholera_dataset.csv`
+- `data`: contains the synthetic datasets `cholera_dataset.csv` and `cholera_datensatz_de.csv`
 - `materials`: contains a `Worksheet.md`
 - `scripts`: install helpers using `conda` and `pip` (`setup-conda.sh` and `setup-venv.sh`)
-- `src`: source code: `explore_data.py` contains the code for writing the widgets that the app is based on; `generate_data.py` is the script for generating (and modifying) the synthetic data
+- `src`: source code: `explore_data.py` and `explore_data_de.py` contain the notebook/widget explorers; `generate_data.py` and `generate_data_de.py` generate the synthetic datasets
 - `environment.yml`: package dependencies; for installing the environment using `conda`
 - `requirements.txt`: package dependencies; for installing the environment using `pip`
-- `LICENSE.md`: MIT license 
+- `LICENSE`: MIT license 
 - `README.md`: this Readme. 
 
 

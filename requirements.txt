@@ -6,3 +6,4 @@ streamlit
 jupyter
 ipywidgets
 scikit-learn
+seaborn

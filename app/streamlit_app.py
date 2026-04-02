@@ -5,6 +5,8 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from src.data_schema import DATA_DIR, normalize_dataframe
+
 st.set_page_config(page_title="Epidemiological Data Explorer — London 1854", layout="wide")
 
 # ---------- Intro (full English context) ----------
@@ -28,32 +30,19 @@ st.info("This app focuses on the *Epidemiological data analysis* track. Start wi
 # ---------- Data ----------
 @st.cache_data
 def load_data():
-    for path in ["data/cholera_dataset.csv","data/cholera_datensatz_de.csv","data/cholera_dataset_en.csv"]:
+    for path in [
+        DATA_DIR / "cholera_dataset.csv",
+        DATA_DIR / "cholera_datensatz_de.csv",
+        DATA_DIR / "cholera_dataset_en.csv",
+    ]:
         try:
-            return pd.read_csv(path), path
+            return pd.read_csv(path), str(path.relative_to(DATA_DIR.parent))
         except Exception:
             pass
     st.error("Could not find a dataset (expected e.g. data/cholera_dataset_en.csv)."); st.stop()
 
 df, data_path = load_data()
-
-# Harmonize columns
-#rename_map = {
-#    "Gender": "Gender", "Geschlecht": "Gender",
-#    "Age": "Age", "Alter": "Age",
-#    "Occupation": "Occupation", "Beruf": "Occupation",
-#    "HouseholdSize": "Household Size", "Haushaltsgröße": "Household Size",
-#    "RawVegConsumption": "Raw Vegetables", "Rohkost-Konsum": "Raw Vegetables",
-#    "NearestPump": "Nearest Pump", "Nächstgelegene Pumpe": "Nearest Pump",
-#    "HomeX": "Home Location X", "Wohnort X": "Home Location X",
-#    "HomeY": "Home Location Y", "Wohnort Y": "Home Location Y",
-#    "HealthStatus": "Health Status", "Gesundheitsstatus": "Health Status",
-#    "DistanceToPumpA": "Distance to Pump A",
-#    "DistanceToPumpB": "Distance to Pump B",
-#    "DistanceToPumpC": "Distance to Pump C",
-#    "DistanceToPumpD": "Distance to Pump D",
-#}
-#df = df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns})
+df = normalize_dataframe(df)
 
 # Derived feature: household size category
 def categorize_household_size(_df):
@@ -74,7 +63,7 @@ age_range = st.sidebar.slider("Age range", 0, max(80, age_max), (age_min, age_ma
 gender = st.sidebar.selectbox("Gender", ["All"] + (sorted(df["Gender"].dropna().unique().tolist()) if "Gender" in df.columns else []), index=0)
 occupation = st.sidebar.selectbox("Occupation", ["All"] + (sorted(df["Occupation"].dropna().unique().tolist()) if "Occupation" in df.columns else []), index=0)
 hh_cat = st.sidebar.selectbox("Household size", ["All"] + (["1-2","3-4","5-6","7+"] if "Household Size Category" in df.columns else []), index=0)
-rv_col = "Raw Vegetables" if "Raw Vegetables" in df.columns else None
+rv_col = "Raw Vegetable Consumption" if "Raw Vegetable Consumption" in df.columns else None
 raw_veg = st.sidebar.selectbox("Raw vegetables", ["All"] + (sorted(df[rv_col].dropna().unique().tolist()) if rv_col else []), index=0) if rv_col else "All"
 nearest_pump = st.sidebar.selectbox("Nearest pump", ["All","Pump A","Pump B","Pump C","Pump D"], index=0)
 bins = st.sidebar.slider("Bin width (numeric variables)", 2, 20, 6, 1)
@@ -97,17 +86,20 @@ tab_intro, tab_dist, tab_heat, tab_scatter, tab_stats = st.tabs(
 # ---------- Overview ----------
 with tab_intro:
     st.subheader("A quick look at the data")
+    filtered_df = apply_filters(df)
     c1, c2 = st.columns([2,1])
     with c1:
-        st.dataframe(apply_filters(df).head(20))
+        st.dataframe(filtered_df.head(20))
     with c2:
-        st.metric("Rows", len(df)); st.metric("Columns", len(df.columns))
-        if "Health Status" in df.columns:
-            st.write("Health outcome (counts)")
-            st.write(df["Health Status"].value_counts(dropna=False))
+        st.metric("Filtered rows", len(filtered_df))
+        st.metric("Total rows", len(df))
+        st.metric("Columns", len(df.columns))
+        if "Health Status" in filtered_df.columns:
+            st.write("Health outcome (filtered counts)")
+            st.write(filtered_df["Health Status"].value_counts(dropna=False))
     st.markdown("**Missing values** are common in real datasets. Keep them in mind when interpreting any plot.")
 
-    miss = df.isna().sum().sort_values(ascending=False)
+    miss = filtered_df.isna().sum().sort_values(ascending=False)
     if miss.sum() > 0:
         fig, ax = plt.subplots(figsize=(8,3))
         ax.bar(miss.index, miss.values)
@@ -122,7 +114,7 @@ with tab_dist:
     candidates = [c for c in df.columns if c not in exclude]
     var = st.selectbox("Variable", candidates, index=(candidates.index("Age") if "Age" in candidates else 0))
 
-    d = df.copy()
+    d = apply_filters(df).copy()
     if var not in d.columns or "Health Status" not in d.columns:
         st.info("Need the selected variable and Health Status to draw this plot.")
     else:
@@ -156,7 +148,7 @@ with tab_heat:
     else:
         x = st.selectbox("X", options, index=0)
         y = st.selectbox("Y", options, index=1)
-        d = df.dropna(subset=[x,y]).copy()
+        d = apply_filters(df).dropna(subset=[x,y]).copy()
         if pd.api.types.is_numeric_dtype(d[x]):
             d[x] = pd.cut(pd.to_numeric(d[x], errors="coerce"), bins=bins, duplicates="drop")
         if pd.api.types.is_numeric_dtype(d[y]):
@@ -206,51 +198,44 @@ Two reminders:
 """)
 
     from scipy import stats
+    d = apply_filters(df).copy()
+
+    if d.empty:
+        st.info("No rows match the current filters. Broaden the filters to run the statistical checks.")
+    else:
+        st.caption(f"Statistical checks below use the currently filtered subset of {len(d)} rows.")
 
     # A) Chi-squared: Health Status vs Nearest Pump
-    if "Health Status" in df.columns and "Nearest Pump" in df.columns:
+    if "Health Status" in d.columns and "Nearest Pump" in d.columns:
         st.markdown("**A. Chi-squared: Is Health Status associated with Nearest Pump?**")
-        ctab = pd.crosstab(df["Health Status"], df["Nearest Pump"])
-        chi2, p, dof, exp = stats.chi2_contingency(ctab)
-        st.write(ctab)
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Chi-squared", f"{chi2:.2f}"); c2.metric("df", f"{dof}"); c3.metric("p-value", f"{p:.3g}")
-        st.caption("A small p-value suggests an association (in this sample). Consider confounding and sampling variation.")
-
-    st.divider()
-
-    # B) t-test: compare mean distances between two pumps
-    st.markdown("**B. t-test: Compare mean distances between two pumps**")
-    p1 = st.selectbox("Pump 1", ["Pump A","Pump B","Pump C","Pump D"], key="p1_stats", index=0)
-    p2 = st.selectbox("Pump 2", ["Pump A","Pump B","Pump C","Pump D"], key="p2_stats", index=1)
-    if p1 != p2:
-        c1 = f"Distance to {p1}"; c2 = f"Distance to {p2}"
-        if c1 in df.columns and c2 in df.columns:
-            x = pd.to_numeric(df[c1], errors="coerce").dropna()
-            y = pd.to_numeric(df[c2], errors="coerce").dropna()
-            if len(x) > 2 and len(y) > 2:
-                t, p = stats.ttest_ind(x, y, equal_var=False, nan_policy="omit")
-                col1, col2 = st.columns(2); col1.metric("t-statistic", f"{t:.2f}"); col2.metric("p-value", f"{p:.3g}")
+        ctab = pd.crosstab(d["Health Status"], d["Nearest Pump"])
+        if ctab.shape[0] >= 2 and ctab.shape[1] >= 2:
+            chi2, p, dof, exp = stats.chi2_contingency(ctab)
+            st.write(ctab)
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Chi-squared", f"{chi2:.2f}"); c2.metric("df", f"{dof}"); c3.metric("p-value", f"{p:.3g}")
+            st.caption("Question answered: does illness severity vary by nearest pump more than we would expect from random variation alone?")
         else:
-            st.info("Distance columns not available.")
+            st.info("Need at least two health-status groups and two pump groups after filtering to run chi-squared.")
 
     st.divider()
 
-    # C) Simple logistic regression with interaction
-    st.markdown("**C. Logistic regression with an interaction (illustration)**")
-    st.caption("Outcome: Severe vs others. Predictors: Age, Distance to chosen pump, and Age×Distance.")
-    if "Health Status" in df.columns and "Age" in df.columns:
+    # B) Simple logistic regression with interaction
+    st.markdown("**B. Logistic regression with an interaction (illustration)**")
+    st.caption("Outcome: severe illness or death vs milder outcomes. Predictors: Age, Distance to chosen pump, and Age×Distance.")
+    if "Health Status" in d.columns and "Age" in d.columns:
         from sklearn.linear_model import LogisticRegression
         from sklearn.preprocessing import StandardScaler
         from sklearn.pipeline import make_pipeline
 
         pump_for_model = st.selectbox("Use distance to:", ["Pump A","Pump B","Pump C","Pump D"], index=0)
         dist_col = f"Distance to {pump_for_model}"
-        if dist_col in df.columns:
-            y = df["Health Status"].astype(str).str.lower().str.contains("severe").astype(int)
+        if dist_col in d.columns:
+            severe_statuses = {"Severe Illness", "Death"}
+            y = d["Health Status"].isin(severe_statuses).astype(int)
             X = pd.DataFrame({
-                "Age": pd.to_numeric(df["Age"], errors="coerce"),
-                "Dist": pd.to_numeric(df[dist_col], errors="coerce"),
+                "Age": pd.to_numeric(d["Age"], errors="coerce"),
+                "Dist": pd.to_numeric(d[dist_col], errors="coerce"),
             })
             X["Age_x_Dist"] = X["Age"] * X["Dist"]
             mask = X.notna().all(axis=1) & y.notna()
@@ -262,9 +247,10 @@ Two reminders:
                 names = ["Age (std)", "Distance (std)", "Age×Distance (std)"]
                 odds = np.exp(coef)
                 st.write(pd.DataFrame({"Feature": names, "Log-odds": coef, "Odds ratio (≈)": odds}))
-                st.markdown("_Interaction > 0_: distance effect grows with age (or vice versa). Interpret cautiously.")
+                st.caption("Question answered: does distance to the selected pump still help predict worse outcomes after taking age into account?")
+                st.markdown("_Interaction > 0_: distance effect grows with age (or vice versa). Interpret cautiously._")
             else:
-                st.info("Not enough complete rows to fit the model.")
+                st.info("Need at least 20 complete rows and both outcome groups after filtering to fit the model.")
         else:
             st.info("Distance column not found for the selected pump.")
 

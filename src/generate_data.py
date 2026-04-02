@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from src.data_schema import DATA_DIR
+
 # set seed for reproducibility
 np.random.seed(42)
 
@@ -97,4 +99,4 @@ def assign_occupation(age, gender):
 data["Occupation"] = [assign_occupation(a, g) for a, g in zip(data["Age"], data["Gender"])]
 
 # Datensatz speichern
-data.to_csv('../data/cholera_dataset.csv', index=False)
+data.to_csv(DATA_DIR / 'cholera_dataset.csv', index=False)
