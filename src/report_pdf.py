@@ -67,10 +67,10 @@ def _build_content_items(payload):
 
     student_name = _coerce_text(payload.get("student_name") or "")
     group_name = _coerce_text(payload.get("group_name") or "")
-    if student_name:
-        _append_text(items, f"{translate('report.pdf.student_label', language)} {student_name}")
     if group_name:
         _append_text(items, f"{translate('report.pdf.group_label', language)} {group_name}")
+    if student_name:
+        _append_text(items, f"{translate('report.pdf.student_label', language)} {student_name}")
 
     if student_name or group_name:
         _append_spacer(items)
@@ -119,23 +119,23 @@ def _build_content_items(payload):
                         field.get("label_text")
                         or translate(field.get("label_msg_id", field.get("field_id", "")), language)
                     )
-                    field_answer = field.get("answer")
-                    if field_answer:
-                        _append_text(
-                            items,
-                            f"{field_label}: {_coerce_text(field_answer)}",
-                            indent=18,
-                            size=10,
-                        )
+                    field_answer = _coerce_text(field.get("answer") or "")
+                    _append_text(
+                        items,
+                        f"{field_label}: {field_answer or translate('report.pdf.blank_answer', language)}",
+                        indent=18,
+                        size=10,
+                    )
                 continue
 
             answer = section.get("answer")
             if isinstance(answer, dict):
                 for field_id, field_answer in answer.items():
-                    if field_answer:
-                        _append_text(items, f"{field_id}: {_coerce_text(field_answer)}", indent=18, size=10)
-            elif answer:
-                _append_text(items, _coerce_text(answer), indent=18, size=10)
+                    answer_text = _coerce_text(field_answer or "") or translate("report.pdf.blank_answer", language)
+                    _append_text(items, f"{field_id}: {answer_text}", indent=18, size=10)
+            else:
+                answer_text = _coerce_text(answer or "") or translate("report.pdf.blank_answer", language)
+                _append_text(items, answer_text, indent=18, size=10)
 
     return items
 

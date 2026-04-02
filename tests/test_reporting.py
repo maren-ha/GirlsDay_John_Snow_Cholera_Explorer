@@ -11,6 +11,8 @@ from src.reporting import (
     build_report_payload,
     build_report_plot_entry,
     figure_to_png_bytes,
+    format_report_parameters,
+    localize_report_error,
     remove_selected_plot,
     replace_selected_plot,
     upsert_selected_plot,
@@ -351,8 +353,23 @@ def test_render_report_pdf_includes_student_and_group_lines_when_both_are_presen
 
     pdf_bytes = render_report_pdf(payload)
 
+    assert pdf_bytes.index(b"Group: Team River") < pdf_bytes.index(b"Student: Ava")
     assert b"Student: Ava" in pdf_bytes
     assert b"Group: Team River" in pdf_bytes
+
+
+def test_render_report_pdf_keeps_blank_guided_fields_visible_with_placeholder_text():
+    payload = build_report_payload(
+        language="en",
+        guided_answers=build_default_guided_answers(),
+        selected_plots=[],
+        student_name="Ava",
+        group_name="Team River",
+    )
+
+    pdf_bytes = render_report_pdf(payload)
+
+    assert b"Your first observation: No response yet." in pdf_bytes
 
 
 def test_render_report_pdf_omits_blank_student_or_group_lines():
@@ -409,6 +426,48 @@ def test_render_report_pdf_safe_surfaces_render_failures_without_mutating_payloa
     assert error_message == "bad image bytes"
     assert payload["selected_plots"] == original_payload["selected_plots"]
     assert payload["report_sections"][0]["field_labels"] == original_payload["report_sections"][0]["field_labels"]
+
+
+def test_localize_report_error_translates_known_selection_errors():
+    message = localize_report_error(
+        "Cannot select more than the maximum of 4 report plots.",
+        "de",
+    )
+
+    assert message == "Es können höchstens 4 Grafiken gespeichert werden."
+
+
+def test_format_report_parameters_localizes_labels_and_values():
+    parts = format_report_parameters(
+        {
+            "variable": "Age",
+            "bins": 12,
+            "filters": {
+                "gender": "Female",
+                "nearest_pump": "Pump B",
+                "age_range": [0, 80],
+            },
+        },
+        "de",
+    )
+
+    assert "Variable: Alter" in parts
+    assert "Bins: 12" in parts
+    assert "Filter: Geschlecht: Weiblich; Nächste Pumpe: Pumpe B; Altersbereich: 0-80" in parts
+
+
+def test_format_report_parameters_localizes_all_filter_sentinel_values():
+    parts = format_report_parameters(
+        {
+            "filters": {
+                "gender": "All",
+                "nearest_pump": "All",
+            },
+        },
+        "de",
+    )
+
+    assert "Filter: Geschlecht: Alle; Nächste Pumpe: Alle" in parts
 
 
 def test_build_report_payload_raises_for_malformed_selected_plots_before_pdf_rendering():

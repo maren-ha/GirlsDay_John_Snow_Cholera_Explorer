@@ -21,6 +21,8 @@ from src.reporting import (
     build_report_payload,
     build_report_plot_entry,
     build_report_plot_id,
+    format_report_parameters,
+    localize_report_error,
     localize_selected_plot,
     remove_selected_plot,
     replace_selected_plot,
@@ -173,7 +175,7 @@ def build_report_pdf_bytes(app_language, state=None):
             group_name=state.get("group_name", ""),
         )
     except ValueError as exc:
-        set_report_error(str(exc), state)
+        set_report_error(localize_report_error(str(exc), app_language), state)
         return None
 
     pdf_bytes, error_message = render_report_pdf_safe(export_payload)
@@ -192,7 +194,7 @@ def save_report_plot(plot_entry):
         clear_report_error()
         rerun_app()
     except ValueError as exc:
-        set_report_error(str(exc))
+        set_report_error(localize_report_error(str(exc), st.session_state["language"]))
 
 
 def remove_report_plot(plot_id):
@@ -207,7 +209,7 @@ def replace_report_plot(plot_id, plot_entry):
         clear_report_error()
         rerun_app()
     except ValueError as exc:
-        set_report_error(str(exc))
+        set_report_error(localize_report_error(str(exc), st.session_state["language"]))
 
 
 def render_report_sidebar(app_language):
@@ -237,7 +239,7 @@ def render_report_sidebar(app_language):
         st.sidebar.markdown(f"**{localized_plot['title_text']}**")
         st.sidebar.caption(f"{localized_plot['plot_type_label']} • {localized_plot['caption_text']}")
         st.sidebar.caption(
-            ", ".join(f"{key}: {value}" for key, value in localized_plot["parameters"].items())
+            " • ".join(format_report_parameters(localized_plot["parameters"], app_language))
             or translate("report.sidebar.no_parameters", app_language)
         )
         st.sidebar.button(

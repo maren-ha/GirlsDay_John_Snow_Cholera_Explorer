@@ -95,6 +95,8 @@ def test_streamlit_app_defines_report_selection_controls():
     assert 'render_report_sidebar' in source
     assert 'build_report_pdf_bytes' in source
     assert 'build_report_payload' in source
+    assert 'format_report_parameters' in source
+    assert 'localize_report_error' in source
     assert 'render_report_pdf_safe' in source
     assert 'download_button(' in source
     assert 'build_sidebar_card_html' in source

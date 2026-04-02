@@ -2,7 +2,9 @@ from copy import deepcopy
 from hashlib import sha1
 from io import BytesIO
 import json
+import re
 
+from src.data_schema import get_display_column_label, get_display_label
 from src.guided_mode import GUIDED_STEPS
 from src.i18n import translate
 
@@ -32,6 +34,27 @@ REPORT_PLOT_COPY_KEYS = {
         "caption_msg_id": "scatter.caption",
     },
 }
+PARAMETER_CATEGORY_MAP = {
+    "gender": "Gender",
+    "occupation": "Occupation",
+    "household_size": "Household Size Category",
+    "raw_veg": "Raw Vegetable Consumption",
+    "nearest_pump": "Nearest Pump",
+}
+PLOT_ERROR_PATTERNS = (
+    (re.compile(r"^Unsupported report plot type: (?P<plot_type>.+)$"), "report.error.unsupported_plot_type"),
+    (re.compile(r"^Selected plot must be a mapping\.$"), "report.error.selected_plot_mapping"),
+    (re.compile(r"^Selected plot is missing required keys: (?P<keys>.+)$"), "report.error.selected_plot_missing_keys"),
+    (re.compile(r"^Selected plot image_bytes must be bytes\.$"), "report.error.selected_plot_bytes"),
+    (re.compile(r"^Selected plot mime_type must be image/png\.$"), "report.error.selected_plot_mime"),
+    (re.compile(r"^Selected plot parameters must be a mapping\.$"), "report.error.selected_plot_parameters"),
+    (
+        re.compile(r"^Cannot select more than the maximum of (?P<max_plots>\d+) report plots\.$"),
+        "report.error.max_plots",
+    ),
+    (re.compile(r"^Selected plot (?P<plot_id>'.+?') was not found\.$"), "report.error.plot_not_found"),
+    (re.compile(r"^Selected plot (?P<plot_id>'.+?') is already saved\.$"), "report.error.plot_already_saved"),
+)
 
 
 def _ensure_supported_plot_type(plot_type):
@@ -122,6 +145,64 @@ def localize_selected_plot(plot, language):
     )
     localized_plot["plot_type_label"] = plot_type_label
     return localized_plot
+
+
+def localize_report_error(message, language):
+    if not message:
+        return message
+
+    for pattern, message_id in PLOT_ERROR_PATTERNS:
+        match = pattern.match(str(message))
+        if match:
+            return translate(message_id, language).format(**match.groupdict())
+    return str(message)
+
+
+def _localize_parameter_value(parameter_key, value, language):
+    if value == "All":
+        return translate("common.all", language)
+
+    if isinstance(value, list) and len(value) == 2 and all(isinstance(item, (int, float)) for item in value):
+        return f"{value[0]}-{value[1]}"
+
+    if parameter_key in ("variable", "x", "y"):
+        return get_display_column_label(value, language)
+
+    category = PARAMETER_CATEGORY_MAP.get(parameter_key)
+    if category is not None:
+        return get_display_label(category, value, language)
+
+    return str(value)
+
+
+def format_report_parameters(parameters, language):
+    if not isinstance(parameters, dict):
+        return []
+
+    localized_parts = []
+    for key, value in parameters.items():
+        if key == "plot_type":
+            continue
+        if key == "filters" and isinstance(value, dict):
+            filter_parts = []
+            for filter_key, filter_value in value.items():
+                if filter_value in (None, "", [], ()):
+                    continue
+                filter_label = translate(f"report.parameter.{filter_key}", language)
+                filter_parts.append(
+                    f"{filter_label}: {_localize_parameter_value(filter_key, filter_value, language)}"
+                )
+            if filter_parts:
+                localized_parts.append(
+                    f"{translate('report.parameter.filters', language)}: {'; '.join(filter_parts)}"
+                )
+            continue
+
+        localized_parts.append(
+            f"{translate(f'report.parameter.{key}', language)}: {_localize_parameter_value(key, value, language)}"
+        )
+
+    return localized_parts
 
 
 def normalize_selected_plots(selected_plots):
