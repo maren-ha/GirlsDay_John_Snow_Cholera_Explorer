@@ -1,7 +1,6 @@
 #%%
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import ipywidgets as widgets
 from IPython.display import display
 import numpy as np
@@ -36,14 +35,6 @@ nearest_pump_dropdown = widgets.Dropdown(
 bar_chart_factors_dropdown = widgets.SelectMultiple(
     options=df.columns.difference(['ID', 'Home Location X', 'Home Location Y', 'Health Status']),
     value=['Gender'], description='Bar Chart Factors:'
-)
-heatmap_x_dropdown = widgets.Dropdown(
-    options=df.columns.difference(['ID', 'Home Location X', 'Home Location Y', 'Health Status']),
-    value='Gender', description='Heatmap X:'
-)
-heatmap_y_dropdown = widgets.Dropdown(
-    options=df.columns.difference(['ID', 'Home Location X', 'Home Location Y', 'Health Status']),
-    value='Occupation', description='Heatmap Y:'
 )
 bin_slider = widgets.IntSlider(
     value=5, min=2, max=20, step=1, description='Bin Resolution:'
@@ -82,29 +73,6 @@ def update_bar_chart(factors, bins):
     plt.title('Stacked Bar Chart of Health Status by Risk Factors')
     plt.show()
 
-def update_heatmap(x, y, bins):
-    plt.figure(figsize=(8, 6))
-    df_temp = df.copy().dropna(subset=[x, y])
-    
-    if df_temp[x].dtype == 'O' and df_temp[y].dtype == 'O':
-        pivot = df_temp.pivot_table(index=y, columns=x, values='ID', aggfunc='count', fill_value=0)
-    else:
-        if df_temp[x].dtype != 'O':
-            df_temp[x] = pd.cut(df_temp[x], bins=bins, duplicates='drop')
-        if df_temp[y].dtype != 'O':
-            df_temp[y] = pd.cut(df_temp[y], bins=bins, duplicates='drop')
-        pivot = df_temp.pivot_table(index=y, columns=x, values='ID', aggfunc='count', fill_value=0)
-    
-    if pivot.empty:
-        print("No data available for the selected variables.")
-        return
-    
-    sns.heatmap(pivot, annot=True, cmap='coolwarm', fmt='d')
-    plt.xlabel(x)
-    plt.ylabel(y)
-    plt.title(f'Heatmap of Disease Cases by {x} vs {y}')
-    plt.show()
-
 def update_scatter_plot(age_range, gender, occupation, pump, household_size_category, raw_vegetables, nearest_pump):
     filtered_df = df[(df['Age'] >= age_range[0]) & (df['Age'] <= age_range[1])]
 
@@ -132,11 +100,6 @@ def update_scatter_plot(age_range, gender, occupation, pump, household_size_cate
 
 display(widgets.interactive(update_bar_chart, 
                             factors=bar_chart_factors_dropdown, 
-                            bins=bin_slider)
-                            )
-display(widgets.interactive(update_heatmap, 
-                            x=heatmap_x_dropdown, 
-                            y=heatmap_y_dropdown, 
                             bins=bin_slider)
                             )
 display(widgets.interactive(update_scatter_plot, 

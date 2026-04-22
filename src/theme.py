@@ -27,9 +27,6 @@ PLOT_PALETTE = [
     "#4f5d75",
 ]
 
-HEATMAP_CMAP = "YlOrBr"
-
-
 def build_theme_css():
     return dedent(
         f"""
@@ -176,23 +173,23 @@ def build_theme_css():
             border-left: 0.28rem solid var(--app-accent);
           }}
 
-          .app-plot-header {
+          .app-plot-header {{
             margin-bottom: 0.65rem;
-          }
+          }}
 
-          .app-plot-title {
+          .app-plot-title {{
             font-size: 1.02rem;
-          }
+          }}
 
-          .app-plot-caption {
+          .app-plot-caption {{
             margin-top: 0.35rem;
-          }
+          }}
 
-          .app-sidebar-note {
+          .app-sidebar-note {{
             margin-top: 0.45rem;
             color: var(--app-accent-deep);
             font-size: 0.88rem;
-          }
+          }}
 
           @media (max-width: 900px) {{
             .app-hero-title {{
@@ -244,6 +241,9 @@ def _format_body(body):
 
 
 def build_hero_html(title, subtitle, focus, eyebrow=None, chips=None):
+    eyebrow_html = (
+        f"<div class='app-hero-eyebrow'>{escape(str(eyebrow))}</div>" if eyebrow else ""
+    )
     chip_html = ""
     if chips:
         chip_html = "<div class='app-chip-row'>" + "".join(
@@ -253,7 +253,7 @@ def build_hero_html(title, subtitle, focus, eyebrow=None, chips=None):
     return dedent(
         f"""
         <div class="app-hero">
-          <div class="app-hero-eyebrow">{escape(str(eyebrow or ""))}</div>
+          {eyebrow_html}
           <h1 class="app-hero-title">{escape(str(title))}</h1>
           <div class="app-hero-subtitle">{escape(str(subtitle))}</div>
           <div class="app-hero-focus">{_format_body(focus)}</div>

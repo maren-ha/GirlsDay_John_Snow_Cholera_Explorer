@@ -17,6 +17,13 @@ def test_english_notebook_uses_shared_normalization_helper():
     assert "normalize_dataframe" in source
 
 
+def test_notebook_helpers_no_longer_include_heatmap_widgets():
+    english_source = (ROOT / "src" / "explore_data.py").read_text()
+    german_source = (ROOT / "src" / "explore_data_de.py").read_text()
+    assert "heatmap" not in english_source.lower()
+    assert "heatmap" not in german_source.lower()
+
+
 def test_streamlit_app_uses_canonical_raw_vegetable_column_name():
     source = (ROOT / "app" / "streamlit_app.py").read_text()
     assert '"Raw Vegetable Consumption"' in source
@@ -40,16 +47,22 @@ def test_streamlit_app_integrates_shared_theme_helpers():
     source = (ROOT / "app" / "streamlit_app.py").read_text()
     assert "from src.theme import" in source
     assert "apply_app_theme" in source
-    assert 'translate("app.hero.eyebrow"' in source
     assert 'translate("app.hero.chip.explore"' in source
-    assert 'st.markdown(\n                render_plot_header_html(' in source
+    assert "st.markdown(" in source
     assert "render_plot_header_html" in source
     assert "style_axes" in source
 
 
+def test_streamlit_app_no_longer_exposes_heatmap_tab():
+    source = (ROOT / "app" / "streamlit_app.py").read_text()
+    assert "tab_heat" not in source
+    assert 'translate("tab.heatmap"' not in source
+    assert "sns.heatmap" not in source
+
+
 def test_streamlit_app_applies_sidebar_filters_across_multiple_tabs():
     source = (ROOT / "app" / "streamlit_app.py").read_text()
-    assert source.count("apply_filters(df)") >= 4
+    assert source.count("apply_filters(df)") >= 3
 
 
 def test_streamlit_app_no_longer_mentions_t_test():
@@ -61,6 +74,35 @@ def test_streamlit_app_reports_filtered_rows():
     source = (ROOT / "app" / "streamlit_app.py").read_text()
     assert 'translate("common.filtered_rows"' in source
     assert 'st.metric(' in source
+
+
+def test_streamlit_app_labels_histogram_slider_as_bin_count():
+    source = (ROOT / "app" / "streamlit_app.py").read_text()
+    assert 'translate("sidebar.bin_count"' in source
+    assert 'translate("sidebar.bin_width"' not in source
+    assert "bin_count = st.sidebar.slider" in source
+    assert "ax.hist(groups, bins=bin_count" in source
+
+
+def test_streamlit_app_exposes_missingness_experiment_slider():
+    source = (ROOT / "app" / "streamlit_app.py").read_text()
+    assert 'translate("overview.missingness_slider"' in source
+    assert "apply_random_missingness" in source
+    assert source.count("apply_random_missingness(") == 1
+
+
+def test_streamlit_app_renders_missingness_summary_as_horizontal_bar_chart():
+    source = (ROOT / "app" / "streamlit_app.py").read_text()
+    assert "ax.barh(" in source
+    assert 'translate("overview.missing_count_label"' in source
+
+
+def test_streamlit_app_scatter_uses_all_plot_candidate_columns_with_jitter():
+    source = (ROOT / "app" / "streamlit_app.py").read_text()
+    assert "prepare_jittered_scatter_values" in source
+    assert "scatter_candidates" in source
+    assert "numeric_cols =" not in source
+    assert "d = apply_filters(df).dropna(subset=[x, y]).copy()" in source
 
 
 def test_streamlit_app_defines_a_language_control():

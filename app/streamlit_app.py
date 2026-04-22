@@ -1,8 +1,15 @@
+from pathlib import Path
+import sys
+
 import pandas as pd
 import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
-import seaborn as sns
+
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from src.guided_mode import (
     GUIDED_STEPS,
@@ -39,8 +46,8 @@ from src.data_schema import (
     localize_dataframe_columns,
     normalize_dataframe,
 )
+from src.data_experiments import apply_random_missingness, prepare_jittered_scatter_values
 from src.theme import (
-    HEATMAP_CMAP,
     apply_app_theme,
     build_hero_html,
     build_sidebar_card_html,
@@ -437,7 +444,6 @@ def main():
             translate("app.title", app_language),
             translate("app.subtitle", app_language),
             translate("app.focus", app_language),
-            eyebrow=translate("app.hero.eyebrow", app_language),
             chips=[
                 translate("app.hero.chip.explore", app_language),
                 translate("app.hero.chip.guided", app_language),
@@ -523,7 +529,7 @@ def main():
         index=0,
         format_func=lambda value: display_option("Nearest Pump", value, app_language),
     )
-    bins = st.sidebar.slider(translate("sidebar.bin_width", app_language), 2, 20, 6, 1)
+    bin_count = st.sidebar.slider(translate("sidebar.bin_count", app_language), 2, 20, 6, 1)
 
     def apply_filters(_df):
         d = _df.copy()
@@ -542,11 +548,10 @@ def main():
         return d
 
     # ---------- Tabs ----------
-    tab_intro, tab_dist, tab_heat, tab_scatter, tab_stats = st.tabs(
+    tab_intro, tab_dist, tab_scatter, tab_stats = st.tabs(
         [
             translate("tab.overview", app_language),
             translate("tab.distributions", app_language),
-            translate("tab.heatmap", app_language),
             translate("tab.scatter", app_language),
             translate("tab.stats", app_language),
         ]
@@ -555,8 +560,22 @@ def main():
     # ---------- Overview ----------
     with tab_intro:
         st.subheader(translate("overview.subtitle", app_language))
+        missingness_percent = st.slider(
+            translate("overview.missingness_slider", app_language),
+            min_value=0,
+            max_value=50,
+            value=0,
+            step=5,
+            help=translate("overview.missingness_help", app_language),
+        )
         filtered_df = apply_filters(df)
-        filtered_display_df = localize_dataframe_columns(localize_dataframe(filtered_df.head(20), app_language), app_language)
+        experimental_filtered_df = apply_random_missingness(
+            filtered_df,
+            percent=missingness_percent,
+            seed=1854,
+            exclude_columns={"ID"},
+        )
+        filtered_display_df = localize_dataframe_columns(localize_dataframe(experimental_filtered_df.head(20), app_language), app_language)
         c1, c2 = st.columns([2, 1])
         with c1:
             st.dataframe(filtered_display_df, use_container_width=True)
@@ -564,29 +583,29 @@ def main():
             st.metric(translate("common.filtered_rows", app_language), len(filtered_df))
             st.metric(translate("common.total_rows", app_language), len(df))
             st.metric(translate("common.columns", app_language), len(df.columns))
-            if "Health Status" in filtered_df.columns:
+            if "Health Status" in experimental_filtered_df.columns:
                 st.write(translate("overview.health_outcome", app_language))
-                st.write(localize_dataframe(filtered_df[["Health Status"]], app_language)["Health Status"].value_counts(dropna=False))
-        st.markdown(translate("overview.missing_note", app_language))
+                st.write(localize_dataframe(experimental_filtered_df[["Health Status"]], app_language)["Health Status"].value_counts(dropna=False))
 
-        miss = filtered_df.isna().sum().sort_values(ascending=False)
-        if miss.sum() > 0:
-            st.markdown(
-                render_plot_header_html(
-                    translate("overview.missing_chart.title", app_language),
-                    translate("overview.missing_chart.caption", app_language),
-                    eyebrow=translate("tab.overview", app_language),
-                ),
-                unsafe_allow_html=True,
-            )
-            fig, ax = plt.subplots(figsize=(8, 3), constrained_layout=True)
-            miss_display = miss.copy()
-            miss_display.index = localize_column_labels(miss_display.index, app_language)
-            ax.bar(miss_display.index, miss_display.values)
-            ax.set_xticklabels(miss_display.index, rotation=45, ha="right")
-            ax.set_ylabel(translate("overview.missing_ylabel", app_language))
-            style_axes(ax)
-            st.pyplot(fig, use_container_width=True)
+        miss = experimental_filtered_df.isna().sum().sort_values(ascending=False)
+        st.markdown(
+            render_plot_header_html(
+                translate("overview.missing_chart.title", app_language),
+                translate("overview.missing_chart.caption", app_language),
+                eyebrow=translate("tab.overview", app_language),
+            ),
+            unsafe_allow_html=True,
+        )
+        miss_display = miss.copy()
+        miss_display.index = localize_column_labels(miss_display.index, app_language)
+        fig_height = max(3.2, 0.34 * len(miss_display))
+        fig, ax = plt.subplots(figsize=(8.5, fig_height), constrained_layout=True)
+        ax.barh(miss_display.index[::-1], miss_display.values[::-1])
+        ax.set_xlabel(translate("overview.missing_count_label", app_language))
+        ax.set_ylabel("")
+        style_axes(ax, grid=False)
+        ax.grid(True, axis="x", alpha=0.28)
+        st.pyplot(fig, use_container_width=True)
 
     # ---------- Distributions (stacked histogram / bar) ----------
     with tab_dist:
@@ -616,7 +635,7 @@ def main():
             if pd.api.types.is_numeric_dtype(d[var]):
                 groups = [g[var].dropna().values for _, g in d.groupby("Health Status")]
                 labels = [get_display_label("Health Status", s, app_language) for s, _ in d.groupby("Health Status")]
-                ax.hist(groups, bins=bins, stacked=True, label=labels)
+                ax.hist(groups, bins=bin_count, stacked=True, label=labels)
                 ax.set_xlabel(format_axis_label(var, app_language))
                 ax.set_ylabel(translate("common.count", app_language))
             else:
@@ -632,7 +651,7 @@ def main():
             distribution_parameters = build_selected_plot_parameters(
                 "distribution",
                 variable=var,
-                bins=bins,
+                bins=bin_count,
                 filters={
                     "age_range": list(age_range),
                     "gender": gender,
@@ -654,75 +673,6 @@ def main():
 
         st.markdown(translate("distributions.discuss", app_language))
 
-    # ---------- Heatmap (compare two variables, with binning for continuous) ----------
-    with tab_heat:
-        st.subheader(translate("heatmap.subtitle", app_language))
-        st.markdown(
-            render_plot_header_html(
-                translate("heatmap.subtitle", app_language),
-                translate("heatmap.caption", app_language),
-                eyebrow=translate("tab.heatmap", app_language),
-            ),
-            unsafe_allow_html=True,
-        )
-        options = [c for c in df.columns if c not in exclude and c != "Health Status"]
-        if len(options) < 2:
-            st.info(translate("heatmap.need_two", app_language))
-        else:
-            x = st.selectbox(
-                translate("common.x", app_language),
-                options,
-                index=0,
-                format_func=lambda value: format_column_option(value, app_language),
-            )
-            y = st.selectbox(
-                translate("common.y", app_language),
-                options,
-                index=1,
-                format_func=lambda value: format_column_option(value, app_language),
-            )
-            d = apply_filters(df).dropna(subset=[x, y]).copy()
-            if pd.api.types.is_numeric_dtype(d[x]):
-                d[x] = pd.cut(pd.to_numeric(d[x], errors="coerce"), bins=bins, duplicates="drop")
-            if pd.api.types.is_numeric_dtype(d[y]):
-                d[y] = pd.cut(pd.to_numeric(d[y], errors="coerce"), bins=bins, duplicates="drop")
-            pv = d.pivot_table(index=y, columns=x, values="ID" if "ID" in d.columns else d.columns[0], aggfunc="count", fill_value=0)
-            if pv.empty:
-                st.info(translate("heatmap.no_data", app_language))
-            else:
-                pv_display = pv.copy()
-                pv_display.index = localize_category_labels(y, pv_display.index, app_language) if not pd.api.types.is_numeric_dtype(d[y]) else pv_display.index
-                pv_display.columns = localize_category_labels(x, pv_display.columns, app_language) if not pd.api.types.is_numeric_dtype(d[x]) else pv_display.columns
-                fig, ax = plt.subplots(figsize=(8, 6), constrained_layout=True)
-                sns.heatmap(pv_display, annot=True, fmt="d", cmap=HEATMAP_CMAP, ax=ax)
-                ax.set_xlabel(format_axis_label(x, app_language))
-                ax.set_ylabel(format_axis_label(y, app_language))
-                style_axes(ax, grid=False)
-                st.pyplot(fig, use_container_width=True)
-                heatmap_parameters = build_selected_plot_parameters(
-                    "heatmap",
-                    x=x,
-                    y=y,
-                    bins=bins,
-                    filters={
-                        "age_range": list(age_range),
-                        "gender": gender,
-                        "occupation": occupation,
-                        "household_size": hh_cat,
-                        "raw_veg": raw_veg,
-                        "nearest_pump": nearest_pump,
-                    },
-                )
-                render_report_plot_controls(
-                    app_language,
-                    "heatmap",
-                    translate("heatmap.subtitle", app_language),
-                    translate("heatmap.caption", app_language),
-                    heatmap_parameters,
-                    fig,
-                )
-                plt.close(fig)
-
     # ---------- Scatter (no binning) ----------
     with tab_scatter:
         st.subheader(translate("scatter.subtitle", app_language))
@@ -734,31 +684,47 @@ def main():
             ),
             unsafe_allow_html=True,
         )
-        numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
-        if len(numeric_cols) < 2:
+        scatter_candidates = [c for c in df.columns if c not in exclude]
+        if len(scatter_candidates) < 2:
             st.info(translate("scatter.need_two", app_language))
         else:
             x = st.selectbox(
                 translate("common.x_variable", app_language),
-                numeric_cols,
-                index=max(0, numeric_cols.index("Age") if "Age" in numeric_cols else 0),
+                scatter_candidates,
+                index=max(0, scatter_candidates.index("Age") if "Age" in scatter_candidates else 0),
                 format_func=lambda value: format_column_option(value, app_language),
             )
-            default_y = next((c for c in numeric_cols if c.startswith("Distance to Pump")), numeric_cols[0])
+            default_y = next((c for c in scatter_candidates if c.startswith("Distance to Pump")), scatter_candidates[0])
             y = st.selectbox(
                 translate("common.y_variable", app_language),
-                numeric_cols,
-                index=max(0, numeric_cols.index(default_y) if default_y in numeric_cols else 1),
+                scatter_candidates,
+                index=max(0, scatter_candidates.index(default_y) if default_y in scatter_candidates else 1),
                 format_func=lambda value: format_column_option(value, app_language),
             )
             d = apply_filters(df).dropna(subset=[x, y]).copy()
             fig, ax = plt.subplots(figsize=(9, 5), constrained_layout=True)
+            prepared_scatter = prepare_jittered_scatter_values(d, x, y, seed=1854)
             if "Health Status" in d.columns:
                 for status, sub in d.groupby("Health Status"):
-                    ax.scatter(sub[x], sub[y], alpha=0.65, label=get_display_label("Health Status", status, app_language))
+                    ax.scatter(
+                        prepared_scatter["x_values"].loc[sub.index],
+                        prepared_scatter["y_values"].loc[sub.index],
+                        alpha=0.65,
+                        label=get_display_label("Health Status", status, app_language),
+                    )
                 ax.legend(title=translate("common.health_status", app_language))
             else:
-                ax.scatter(d[x], d[y], alpha=0.65)
+                ax.scatter(prepared_scatter["x_values"], prepared_scatter["y_values"], alpha=0.65)
+            if prepared_scatter["x_tick_labels"] is not None:
+                ax.set_xticks(prepared_scatter["x_tick_positions"])
+                ax.set_xticklabels(
+                    localize_category_labels(x, prepared_scatter["x_tick_labels"], app_language),
+                    rotation=30,
+                    ha="right",
+                )
+            if prepared_scatter["y_tick_labels"] is not None:
+                ax.set_yticks(prepared_scatter["y_tick_positions"])
+                ax.set_yticklabels(localize_category_labels(y, prepared_scatter["y_tick_labels"], app_language))
             ax.set_xlabel(format_axis_label(x, app_language))
             ax.set_ylabel(format_axis_label(y, app_language))
             style_axes(ax)
@@ -788,7 +754,7 @@ def main():
 
         st.markdown(translate("scatter.discuss", app_language))
 
-    # ---------- Hypothesis & stats (correlation, not causation) ----------
+    # ---------- Hypothesis & stats ----------
     with tab_stats:
         st.subheader(translate("stats.subtitle", app_language))
         st.markdown(translate("stats.reminders", app_language))

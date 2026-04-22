@@ -98,8 +98,8 @@ def test_build_report_plot_entry_rejects_unsupported_plot_types():
     fig = FakeFigure()
     with pytest.raises(ValueError, match="Unsupported report plot type"):
         build_report_plot_entry(
-            plot_id="boxplot:age",
-            plot_type="boxplot",
+            plot_id="heatmap:age-gender",
+            plot_type="heatmap",
             title="Title",
             caption="Caption",
             parameters={},
@@ -186,7 +186,7 @@ def test_build_report_payload_collects_guided_answers_and_selected_plots():
     }
     assert payload["report_sections"][0]["report_section"] == "overview"
     assert len(payload["report_sections"]) >= 1
-    assert set(SUPPORTED_REPORT_PLOT_TYPES) == {"distribution", "heatmap", "scatter"}
+    assert set(SUPPORTED_REPORT_PLOT_TYPES) == {"distribution", "scatter"}
 
 
 def test_build_report_payload_allows_zero_selected_plots_and_keeps_translated_field_labels():
@@ -452,7 +452,7 @@ def test_format_report_parameters_localizes_labels_and_values():
     )
 
     assert "Variable: Alter" in parts
-    assert "Bins: 12" in parts
+    assert "Anzahl Gruppen: 12" in parts
     assert "Filter: Geschlecht: Weiblich; Nächste Pumpe: Pumpe B; Altersbereich: 0-80" in parts
 
 

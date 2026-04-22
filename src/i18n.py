@@ -1,25 +1,23 @@
 STRINGS = {
     "de": {
         "app.title": "Epidemiologischer Daten-Explorer — London 1854",
-        "app.subtitle": "Eine kurze Einführung in den Ausbruch von 1854.",
-        "app.hero.eyebrow": "Klassenraum-Explorer",
+        "app.subtitle": "Du bist Wissenschaftlerin in London, 1854.",
         "app.hero.chip.explore": "Erkunden",
         "app.hero.chip.guided": "Geführte Notizen",
         "app.hero.chip.report": "PDF-Bericht",
         "app.intro": (
-            "**Ausbruch in London (1854).**  \n"
-            "Eine ansteckende Krankheit mit Symptomen wie Durchfall, Übelkeit, Erbrechen und starkem Flüssigkeitsverlust. "
-            "Innerhalb weniger Tage erkranken Hunderte; viele sterben. Die Ursache ist unbekannt - viele glauben an \"schlechte Luft\". "
-            "Angst, Gerüchte und Verwirrung breiten sich aus.\n\n"
+            "**London, 1854.**  \n"
+            "In den engen Straßen von Soho erkranken immer mehr Menschen. Die Symptome sind heftig: Durchfall, Übelkeit, Erbrechen "
+            "und gefährlicher Flüssigkeitsverlust. Manche Familien verlieren innerhalb weniger Tage mehrere Angehörige. "
+            "Angst und Gerüchte breiten sich aus. Viele sprechen von \"schlechte Luft\" - aber du willst dich nicht mit Gerüchten zufriedengeben.\n\n"
             "**Deine Rolle.**  \n"
-            "Du schlüpfst in die Rolle von Wissenschaftlerinnen und Wissenschaftlern und versuchst mit Daten, Modellen und Experimenten herauszufinden:  \n"
-            "- Wie genau verbreitet sich die Krankheit?  \n"
-            "- Wer ist besonders gefährdet?  \n"
-            "- Wie können wir sie stoppen?\n\n"
-            "Vier Aufgaben in der Untersuchung: **Populationsdynamik-Simulation**, **Genom-Stämme analysieren**, "
-            "**Antikörper-Studien** und **Epidemiologische Datenanalyse** (diese App)."
+            "Stell dir vor, du bist Wissenschaftlerin. Du hast Beobachtungen gesammelt: Alter, Berufe, wie viele Personen in einem Haushalt wohnen, "
+            "ihre Ernährung, Entfernungen zu Wasserpumpen und Krankheitsverläufe. Jetzt beginnt die eigentliche Spurensuche: Welche Muster stecken in den Daten?  \n"
+            "- Wer ist besonders stark betroffen?  \n"
+            "- Welche Hinweise wiederholen sich?  \n"
+            "- Welche Hypothese kannst du mit den Daten prüfen?"
         ),
-        "app.focus": "Diese App konzentriert sich auf die Spur **Epidemiologische Datenanalyse**. Starte mit explorativen Visualisierungen, formuliere eine Hypothese und prüfe sie dann mit einfachen statistischen Tests auf Korrelation (nicht Kausalität).",
+        "app.focus": "Beginne mit einem vorsichtigen Blick auf die Daten. Suche Muster, formuliere eine Hypothese und prüfe deine Idee dann mit einem einfachen statistischen Test.",
         "sidebar.language": "Sprache",
         "sidebar.filters": "Filter",
         "sidebar.age_range": "Altersbereich",
@@ -28,50 +26,43 @@ STRINGS = {
         "sidebar.household_size": "Haushaltsgröße",
         "sidebar.raw_vegetables": "Rohkost",
         "sidebar.nearest_pump": "Nächste Pumpe",
-        "sidebar.bin_width": "Bin-Breite (numerische Variablen)",
+        "sidebar.bin_count": "Anzahl der Gruppen (für Zahlen)",
         "language.de": "Deutsch",
         "language.en": "Englisch",
         "tab.overview": "Überblick",
-        "tab.distributions": "Verteilungen (gestapeltes Histogramm)",
-        "tab.heatmap": "Heatmap (zwei Variablen vergleichen)",
-        "tab.scatter": "Streudiagramm (ohne Binning)",
+        "tab.distributions": "Balkendiagramm",
+        "tab.scatter": "Punktdiagramm",
         "tab.stats": "Hypothese & Statistik",
         "overview.subtitle": "Ein kurzer Blick auf die Daten",
         "overview.filtered_rows": "Gefilterte Zeilen",
         "overview.total_rows": "Gesamtzeilen",
         "overview.columns": "Spalten",
         "overview.health_outcome": "Gesundheitsergebnis (gefilterte Häufigkeiten)",
-        "overview.missing_note": "**Fehlende Werte** sind in realen Datensätzen normal. Denk bei jeder Grafik daran.",
-        "overview.missing_chart.title": "Fehlende Werte im aktuellen Ausschnitt",
-        "overview.missing_chart.caption": "Diese kleine Übersicht zeigt, in welchen Spalten im gefilterten Datenausschnitt noch Lücken stecken.",
+        "overview.missingness_slider": "Zufällig fehlende Werte hinzufügen",
+        "overview.missingness_help": "Experiment: Der Regler verändert nur die Ansicht in dieser App, nicht die gespeicherte CSV-Datei.",
+        "overview.missing_chart.title": "Fehlende Werte pro Spalte",
+        "overview.missing_chart.caption": "Der Regler oben erzeugt zusätzliche Lücken. Hier siehst du, welche Spalten gerade betroffen sind.",
+        "overview.missing_count_label": "Anzahl fehlender Werte",
         "overview.missing_ylabel": "Fehlend",
-        "distributions.subtitle": "Verteilung möglicher Risikofaktoren - Gesundheitszustand hervorheben",
-        "distributions.caption": "Wähle eine Variable. Wenn sie kontinuierlich ist, bilden wir Klassen - die **Bin-Breite** ist also wichtig. Das ist explorativ.",
+        "distributions.subtitle": "Wer ist stärker betroffen?",
+        "distributions.caption": "Wähle eine Variable aus. Bei Zahlen wie Alter oder Entfernung fasst der Regler links ähnliche Werte zu Gruppen zusammen.",
         "distributions.need_variable": "Für diese Grafik werden die ausgewählte Variable und der Gesundheitszustand benötigt.",
-        "distributions.title": "Gestapelte Verteilung nach Gesundheitszustand",
+        "distributions.title": "Balkendiagramm nach Gesundheitszustand",
         "distributions.discuss": (
-            "**Diskutiere:**  \n"
-            "- Welche Gruppen/Bins wirken stärker betroffen?  \n"
-            "- Könnte eine andere Variable dahinterstecken (Konfundierung)?  \n"
-            "- Wie verändert die **Bin-Breite** deinen Eindruck bei kontinuierlichen Variablen?"
+            "**Schau genau hin:** In welchen Gruppen häufen sich schwere Fälle? "
+            "Verändert sich dein Eindruck, wenn du die Anzahl der Gruppen änderst?"
         ),
-        "heatmap.subtitle": "Zwei Variablen direkt vergleichen (mit Binning für kontinuierliche Variablen)",
-        "heatmap.need_two": "Zum Vergleichen werden mindestens zwei Variablen benötigt.",
-        "heatmap.no_data": "Für diese Kombination liegen keine Daten vor.",
-        "heatmap.caption": "Heatmaps vereinfachen zugunsten der Klarheit - gut für **Anzahlen**, aber sie hängen von der **Bin-Wahl** ab.",
-        "scatter.subtitle": "Fein aufgelöster Blick ohne Binning (Farbe nach Ergebnis)",
-        "scatter.caption": "Wähle zwei kontinuierliche Variablen (z. B. Alter und Entfernung zu einer Pumpe). Nutze die Seitenleiste, um zu sehen, wie sich Muster verstärken oder abschwächen.",
-        "scatter.need_two": "Es werden mindestens zwei numerische Variablen benötigt.",
-        "scatter.title": "Streudiagramm ohne Binning",
+        "scatter.subtitle": "Zwei Merkmale direkt vergleichen",
+        "scatter.caption": "Wähle zwei Variablen. Wenn viele Punkte auf derselben Stelle liegen würden, werden sie leicht auseinandergezogen, damit du sie besser erkennen kannst.",
+        "scatter.need_two": "Es werden mindestens zwei Variablen benötigt.",
+        "scatter.title": "Punktdiagramm",
         "scatter.discuss": (
-            "**Von den Visualisierungen zur Hypothese:** Welches Muster scheint anhand der Verteilungen, der Heatmap und des Streudiagramms am wahrscheinlichsten?"
+            "**Von der Grafik zur Hypothese:** Welche Gruppe oder welcher Bereich fällt dir auf? Passt das zu deiner Vermutung?"
         ),
-        "stats.subtitle": "Eine *statistische Korrelation* bestätigen (nicht Kausalität)",
+        "stats.subtitle": "Eine Idee mit einem statistischen Test prüfen",
         "stats.reminders": (
-            "Zwei Erinnerungen:\n"
-            "1) Wir können **Assoziation/Korrelation** testen, aber das ist kein Beweis für **Kausalität** "
-            "(z. B. könnte ein Superspreading-Ereignis in der Nähe einer Pumpe einen Entfernungseffekt imitieren).  \n"
-            "2) Ein einfaches **Modell/Verfahren** hilft zu prüfen, ob das Muster stark genug gegen das Rauschen hervortritt."
+            "Jetzt prüfen wir, ob ein Muster in den Daten stark genug ist, um genauer hinzuschauen. "
+            "Ein statistischer Test ist dabei wie eine Lupe: Er hilft, ein Muster von zufälligem Rauschen zu unterscheiden."
         ),
         "stats.no_rows": "Keine Zeilen passen zu den aktuellen Filtern. Weite die Filter, um die statistischen Checks auszuführen.",
         "stats.filtered_subset": "Die statistischen Checks unten verwenden den aktuell gefilterten Ausschnitt mit {rows} Zeilen.",
@@ -79,12 +70,12 @@ STRINGS = {
         "stats.chi_squared_question": "Frage beantwortet: Unterscheidet sich der Schweregrad der Erkrankung je nach nächster Pumpe stärker, als wir es durch Zufall erwarten würden?",
         "stats.need_two_groups": "Nach dem Filtern werden mindestens zwei Gesundheitsgruppen und zwei Pumpengruppen für den Chi-Quadrat-Test benötigt.",
         "stats.logistic": "**B. Logistische Regression mit Interaktion (Illustration)**",
-        "stats.logistic_caption": "Ergebnis: schwere Krankheit oder Tod vs. mildere Verläufe. Prädiktoren: Alter, Entfernung zur gewählten Pumpe und Alter×Entfernung.",
+        "stats.logistic_caption": "Ergebnis: schwere Krankheit oder Tod vs. mildere Verläufe. Wir schauen auf Alter und Entfernung zur gewählten Pumpe.",
         "stats.use_distance": "Entfernung verwenden zu:",
         "stats.need_complete_rows": "Für das Modell werden nach dem Filtern mindestens 20 vollständige Zeilen und beide Ergebnisgruppen benötigt.",
         "stats.distance_missing": "Für die gewählte Pumpe wurde keine Entfernungs-Spalte gefunden.",
-        "stats.model_question": "Frage beantwortet: Hilft die Entfernung zur gewählten Pumpe immer noch, schlechtere Ergebnisse vorherzusagen, wenn das Alter berücksichtigt wird?",
-        "stats.model_interpretation": "_Interaktion > 0_: Der Entfernungs-Effekt wächst mit dem Alter (oder umgekehrt). Vorsichtig interpretieren._",
+        "stats.model_question": "Frage beantwortet: Hilft die Entfernung zur gewählten Pumpe, schlechtere Ergebnisse vorherzusagen, wenn wir auch das Alter betrachten?",
+        "stats.model_interpretation": "_Hinweis:_ Diese Zahlen sind ein Werkzeug zum Vergleichen. Große Unterschiede verdienen einen zweiten Blick.",
         "stats.metric.chi_squared": "Chi-Quadrat",
         "stats.metric.df": "Freiheitsgrade",
         "stats.metric.p_value": "p-Wert",
@@ -131,7 +122,7 @@ STRINGS = {
         "guided.distribution.prompt": "Wähle im Verteilungstab eine Variable und beschreibe, welche Gruppen oder Werte besonders auffallen.",
         "guided.distribution.observation_label": "Was fällt bei der Verteilung auf?",
         "guided.comparison.title": "Schritt 3: Zwei Variablen vergleichen",
-        "guided.comparison.prompt": "Nutze Heatmap oder Streudiagramm und beschreibe, welche Beziehung zwischen zwei Variablen sichtbar wird.",
+        "guided.comparison.prompt": "Nutze das Streudiagramm und beschreibe, welche Beziehung zwischen zwei Variablen sichtbar wird.",
         "guided.comparison.observation_label": "Welche Beziehung siehst du?",
         "guided.hypothesis.title": "Schritt 4: Eine Hypothese formulieren",
         "guided.hypothesis.prompt": "Formuliere eine überprüfbare Hypothese, die du mit den Daten testen möchtest.",
@@ -144,14 +135,14 @@ STRINGS = {
         "guided.conclusion.field_label": "Dein Fazit",
         "report.sidebar.title": "Berichtsauswahl",
         "report.sidebar.selected_count": "{count}/{max_plots} Grafiken ausgewählt",
-        "report.sidebar.hint": "Wähle Grafiken in den Tabs Verteilungen, Heatmap oder Streudiagramm aus.",
+        "report.sidebar.hint": "Wähle Grafiken in den Tabs Verteilungen oder Streudiagramm aus.",
         "report.sidebar.empty": "Noch keine Grafiken gespeichert.",
         "report.sidebar.remove": "Entfernen",
         "report.sidebar.no_parameters": "Keine Plot-Parameter",
         "report.parameter.variable": "Variable",
         "report.parameter.x": "X-Achse",
         "report.parameter.y": "Y-Achse",
-        "report.parameter.bins": "Bins",
+        "report.parameter.bins": "Anzahl Gruppen",
         "report.parameter.filters": "Filter",
         "report.parameter.age_range": "Altersbereich",
         "report.parameter.gender": "Geschlecht",
@@ -175,7 +166,6 @@ STRINGS = {
         "report.error.plot_already_saved": "Die Grafik {plot_id} ist bereits gespeichert.",
         "report.download.button": "PDF herunterladen",
         "report.plot_type.distribution": "Verteilung",
-        "report.plot_type.heatmap": "Heatmap",
         "report.plot_type.scatter": "Streudiagramm",
         "report.pdf.heading": "Berichtsexport",
         "report.pdf.student_label": "Schülername:",
@@ -188,27 +178,28 @@ STRINGS = {
         "guided.placeholder.body": "In einem späteren Schritt kommt hier die geführte Analyse mit studentischen Eingaben.",
         "export.placeholder.title": "Export",
         "export.placeholder.body": "Der Berichtsexport folgt in einem späteren Schritt.",
-        "footer.dataset": "Datensatz: {data_path} • Synthetischer Lehr-Datensatz. Erst explorieren; Modelle testen Korrelation, nicht Kausalität.",
+        "footer.dataset": "Datensatz: {data_path} • Synthetischer Lehr-Datensatz. Erst beobachten, dann mit einem statistischen Test prüfen.",
     },
     "en": {
         "app.title": "Epidemiological Data Explorer — London 1854",
-        "app.subtitle": "A short introduction to the 1854 outbreak.",
-        "app.hero.eyebrow": "Classroom explorer",
+        "app.subtitle": "You are a scientist in London, 1854.",
         "app.hero.chip.explore": "Explore",
         "app.hero.chip.guided": "Guided notes",
         "app.hero.chip.report": "PDF report",
         "app.intro": (
-            "**Outbreak in London (1854).**  \n"
-            "An infectious disease with symptoms such as diarrhea, nausea, vomiting, and severe fluid loss. Within a few days, hundreds fall ill; many die. "
-            "The cause is unknown - many believe in \"bad air.\" Fear, rumors, and confusion spread.\n\n"
+            "**London, 1854.**  \n"
+            "In the crowded streets of Soho, more and more people are becoming ill. The symptoms are severe: diarrhea, nausea, vomiting, "
+            "and dangerous fluid loss. Some families lose several people within days. "
+            "Fear and rumors spread. Many blame \"bad air\" - but you do not want to rely on rumors.\n\n"
             "**Your role.**  \n"
-            "You step into the shoes of scientists and, using data, models, and experiments, try to find out:  \n"
-            "- How exactly does the disease spread?  \n"
-            "- Who is particularly at risk?  \n"
-            "- How can we stop it?\n\n"
-            "Four tasks in the investigation: **Population dynamics simulation**, **Analyze genome strains**, **Antibody studies**, and **Epidemiological data analysis** (this app)."
+            "Imagine you are a scientist. You have gathered observations: ages, occupations, how many people live in each household, "
+            "their diet, distances to water pumps, and health outcomes. "
+            "Now the investigation begins: what patterns are hiding in the data?  \n"
+            "- Who seems most affected?  \n"
+            "- Which clues keep appearing?  \n"
+            "- Which hypothesis can you test with the data?"
         ),
-        "app.focus": "This app focuses on the *Epidemiological data analysis* track. Start with exploratory visuals, form a hypothesis, then use simple statistical checks to test for correlation (not causation).",
+        "app.focus": "Start with a careful look at the data. Search for patterns, form a hypothesis, then check your idea with a simple statistical test.",
         "sidebar.language": "Language",
         "sidebar.filters": "Filters",
         "sidebar.age_range": "Age range",
@@ -217,12 +208,11 @@ STRINGS = {
         "sidebar.household_size": "Household size",
         "sidebar.raw_vegetables": "Raw vegetables",
         "sidebar.nearest_pump": "Nearest pump",
-        "sidebar.bin_width": "Bin width (numeric variables)",
+        "sidebar.bin_count": "Number of groups (numeric variables)",
         "language.de": "German",
         "language.en": "English",
         "tab.overview": "Overview",
         "tab.distributions": "Distributions (stacked histogram)",
-        "tab.heatmap": "Heatmap (compare two variables)",
         "tab.scatter": "Scatter (no binning)",
         "tab.stats": "Hypothesis & stats",
         "overview.subtitle": "A quick look at the data",
@@ -230,36 +220,33 @@ STRINGS = {
         "overview.total_rows": "Total rows",
         "overview.columns": "Columns",
         "overview.health_outcome": "Health outcome (filtered counts)",
-        "overview.missing_note": "**Missing values** are common in real datasets. Keep them in mind when interpreting any plot.",
-        "overview.missing_chart.title": "Missing values in the current slice",
-        "overview.missing_chart.caption": "This quick summary shows which columns still have gaps in the filtered data you are working with.",
+        "overview.missingness_slider": "Add random missing values",
+        "overview.missingness_help": "Experiment: this slider changes only the app view, not the saved CSV file.",
+        "overview.missing_chart.title": "Missing values by column",
+        "overview.missing_chart.caption": "Use the slider above to add extra gaps. This chart shows which columns are affected.",
+        "overview.missing_count_label": "Number of missing values",
         "overview.missing_ylabel": "Missing",
         "distributions.subtitle": "Distribution of potential risk factors - highlight health status",
-        "distributions.caption": "Select a variable. If it’s continuous, we bin it - so **bin width matters**. This is exploratory.",
+        "distributions.caption": "Select a variable. If it uses numbers, the slider on the left groups similar values together.",
         "distributions.need_variable": "Need the selected variable and Health Status to draw this plot.",
         "distributions.title": "Stacked distribution by Health Status",
         "distributions.discuss": (
             "**Discuss:**  \n"
-            "- Which groups/bins look more affected?  \n"
+            "- Which groups look more affected?  \n"
             "- Could this be driven by another variable (confounding)?  \n"
-            "- How does changing the **bin width** change your impression for continuous variables?"
+            "- How does changing the **number of groups** change your impression for numeric variables?"
         ),
-        "heatmap.subtitle": "Directly compare two variables (with binning for continuous)",
-        "heatmap.need_two": "Need at least two variables to compare.",
-        "heatmap.no_data": "No data for this combination.",
-        "heatmap.caption": "Heatmaps trade detail for clarity - great for **counts**, but they depend on **binning choices**.",
         "scatter.subtitle": "Fine-grained view without binning (color by outcome)",
-        "scatter.caption": "Choose two continuous variables (e.g., Age and Distance to a pump). Filter using the sidebar to see patterns strengthen/weaken.",
-        "scatter.need_two": "Need at least two numeric variables.",
-        "scatter.title": "Scatter without binning",
+        "scatter.caption": "Choose any two variables. Categories are slightly jittered so overlapping points become visible.",
+        "scatter.need_two": "Need at least two variables.",
+        "scatter.title": "Scatter with light jitter",
         "scatter.discuss": (
-            "**From visuals to hypothesis:** Based on the distributions, heatmap, and scatter, what pattern seems most likely?"
+            "**From visuals to hypothesis:** Based on the distributions and scatter plot, what pattern seems most likely?"
         ),
-        "stats.subtitle": "Confirming a *statistical correlation* (not causation)",
+        "stats.subtitle": "Check an idea with a statistical test",
         "stats.reminders": (
-            "Two reminders:\n"
-            "1) We can test for **association/correlation**, but that’s not proof of **causation** (e.g., a superspreading event near one pump could mimic a distance effect).  \n"
-            "2) A simple **model/test** helps check whether the pattern is strong enough to stand out from noise."
+            "Now we check whether a pattern in the data is strong enough to deserve a closer look. "
+            "A statistical test is like a magnifying glass: it helps separate a pattern from random noise."
         ),
         "stats.no_rows": "No rows match the current filters. Broaden the filters to run the statistical checks.",
         "stats.filtered_subset": "Statistical checks below use the currently filtered subset of {rows} rows.",
@@ -267,12 +254,12 @@ STRINGS = {
         "stats.chi_squared_question": "Question answered: does illness severity vary by nearest pump more than we would expect from random variation alone?",
         "stats.need_two_groups": "Need at least two health-status groups and two pump groups after filtering to run chi-squared.",
         "stats.logistic": "**B. Logistic regression with an interaction (illustration)**",
-        "stats.logistic_caption": "Outcome: severe illness or death vs milder outcomes. Predictors: Age, Distance to chosen pump, and Age×Distance.",
+        "stats.logistic_caption": "Outcome: severe illness or death vs milder outcomes. We look at age and distance to the selected pump.",
         "stats.use_distance": "Use distance to:",
         "stats.need_complete_rows": "Need at least 20 complete rows and both outcome groups after filtering to fit the model.",
         "stats.distance_missing": "Distance column not found for the selected pump.",
-        "stats.model_question": "Question answered: does distance to the selected pump still help predict worse outcomes after taking age into account?",
-        "stats.model_interpretation": "_Interaction > 0_: distance effect grows with age (or vice versa). Interpret cautiously._",
+        "stats.model_question": "Question answered: does distance to the selected pump help predict worse outcomes when we also look at age?",
+        "stats.model_interpretation": "_Hint:_ These numbers are a comparison tool. Large differences deserve a second look.",
         "stats.metric.chi_squared": "Chi-squared",
         "stats.metric.df": "df",
         "stats.metric.p_value": "p-value",
@@ -319,7 +306,7 @@ STRINGS = {
         "guided.distribution.prompt": "Pick a variable in the distribution tab and describe which groups or values stand out.",
         "guided.distribution.observation_label": "What stands out in the distribution?",
         "guided.comparison.title": "Step 3: Compare two variables",
-        "guided.comparison.prompt": "Use the heatmap or scatter tab and describe the relationship you can see between two variables.",
+        "guided.comparison.prompt": "Use the scatter tab and describe the relationship you can see between two variables.",
         "guided.comparison.observation_label": "What relationship do you see?",
         "guided.hypothesis.title": "Step 4: Form a testable hypothesis",
         "guided.hypothesis.prompt": "Write a hypothesis that you can test with the data.",
@@ -332,14 +319,14 @@ STRINGS = {
         "guided.conclusion.field_label": "Your conclusion",
         "report.sidebar.title": "Report selection",
         "report.sidebar.selected_count": "{count}/{max_plots} plots selected",
-        "report.sidebar.hint": "Pick plots from the Distribution, Heatmap, or Scatter tabs.",
+        "report.sidebar.hint": "Pick plots from the Distribution or Scatter tabs.",
         "report.sidebar.empty": "No plots saved yet.",
         "report.sidebar.remove": "Remove",
         "report.sidebar.no_parameters": "No plot parameters",
         "report.parameter.variable": "Variable",
         "report.parameter.x": "X axis",
         "report.parameter.y": "Y axis",
-        "report.parameter.bins": "Bins",
+        "report.parameter.bins": "Groups",
         "report.parameter.filters": "Filters",
         "report.parameter.age_range": "Age range",
         "report.parameter.gender": "Gender",
@@ -363,7 +350,6 @@ STRINGS = {
         "report.error.plot_already_saved": "Selected plot {plot_id} is already saved.",
         "report.download.button": "Download PDF",
         "report.plot_type.distribution": "Distribution",
-        "report.plot_type.heatmap": "Heatmap",
         "report.plot_type.scatter": "Scatter",
         "report.pdf.heading": "Report export",
         "report.pdf.student_label": "Student:",
@@ -376,7 +362,7 @@ STRINGS = {
         "guided.placeholder.body": "The guided analysis with student responses will land in a later task.",
         "export.placeholder.title": "Export",
         "export.placeholder.body": "Report export will follow in a later task.",
-        "footer.dataset": "Dataset: {data_path} • Synthetic teaching dataset. Exploratory first; models test correlation, not causation.",
+        "footer.dataset": "Dataset: {data_path} • Synthetic teaching dataset. Observe first, then check with a statistical test.",
     },
 }
 

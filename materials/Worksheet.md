@@ -11,7 +11,7 @@ No one knows the cause, many suspect “bad air”. You are scientists trying to
 Look at the **Overview** tab:
 - How many data points (rows) are there?
 - What variables are available? (age, gender, distance to pumps, etc.)
-- Are there any **missing values**?
+- Try the missing-values slider. What changes in the table when more values disappear?
 
 ---
 
@@ -20,16 +20,11 @@ Look at the **Overview** tab:
 ### a) Distributions (Stacked histogram)
 - Choose one variable (e.g. age, occupation, nearest pump).  
 - What does the **distribution** look like?  
-- Which groups or bins have **more severe cases**?  
-- For continuous variables, change the **bin width** with the slider on the left (bottom) — what happens?
+- Which groups have **more severe cases**?  
+- For numeric variables, change the **number of groups** with the slider on the left (bottom) — what happens?
 
-### b) Heatmap (Compare two variables)
-- Pick two variables (e.g. age vs. household size).  
-- Which combinations show higher counts of illness?  
-- Why might binning matter here?
-
-### c) Scatter (No binning)
-- Choose two **continuous** variables (e.g. Age vs. Distance to Pump A).  
+### b) Scatter (With light jitter)
+- Choose two variables (for example Age vs. Distance to Pump A, or Gender vs. Nearest Pump).  
 - What patterns do you see when points are colored by health status?  
 - Try changing filters using the menus on the left (gender, occupation, etc.): does the pattern get stronger or weaker?
 
@@ -52,9 +47,7 @@ Write your hypothesis here:
 Go to the **Hypothesis & stats** tab:
 - Which statistical tests are shown?  
   _You should now see a **Chi-squared** test and a simple **Logistic regression**._
-- What do they tell you about **association** between factors and disease?  
-- What does “correlation ≠ causation” mean in this context?  
-  _(Can you think of other explanations for the pattern you saw? - Where could confounding be hiding?)_
+- Do the test results support your idea, or do they make you want to change it?
 
 ---
 
@@ -66,4 +59,4 @@ Go to the **Hypothesis & stats** tab:
 
 ---
 
-💡 *Remember:* Data can show patterns, but not always causes. Science is about exploring, questioning, and testing ideas carefully.
+💡 *Remember:* Science is about exploring, questioning, and testing ideas carefully.

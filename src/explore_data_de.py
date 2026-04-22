@@ -1,6 +1,5 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import ipywidgets as widgets
 from IPython.display import display
 import numpy as np
@@ -35,14 +34,6 @@ nächste_pumpe_dropdown = widgets.Dropdown(
 balkendiagramm_faktor_dropdown = widgets.SelectMultiple(
     options=df.columns.difference(['ID', 'Wohnort X', 'Wohnort Y', 'Gesundheitsstatus']),
     value=['Geschlecht'], description='Balkendiagramm-Faktoren:'
-)
-heatmap_x_dropdown = widgets.Dropdown(
-    options=df.columns.difference(['ID', 'Wohnort X', 'Wohnort Y', 'Gesundheitsstatus']),
-    value='Geschlecht', description='Heatmap X:'
-)
-heatmap_y_dropdown = widgets.Dropdown(
-    options=df.columns.difference(['ID', 'Wohnort X', 'Wohnort Y', 'Gesundheitsstatus']),
-    value='Beruf', description='Heatmap Y:'
 )
 bin_slider = widgets.IntSlider(
     value=5, min=2, max=20, step=1, description='Bin-Auflösung:'
@@ -81,29 +72,6 @@ def update_bar_chart(factors, bins):
     plt.title('Gestapeltes Balkendiagramm der Gesundheitszustände')
     plt.show()
 
-def update_heatmap(x, y, bins):
-    plt.figure(figsize=(8, 6))
-    df_temp = df.copy().dropna(subset=[x, y])
-    
-    if df_temp[x].dtype == 'O' and df_temp[y].dtype == 'O':
-        pivot = df_temp.pivot_table(index=y, columns=x, values='ID', aggfunc='count', fill_value=0)
-    else:
-        if df_temp[x].dtype != 'O':
-            df_temp[x] = pd.cut(df_temp[x], bins=bins, duplicates='drop')
-        if df_temp[y].dtype != 'O':
-            df_temp[y] = pd.cut(df_temp[y], bins=bins, duplicates='drop')
-        pivot = df_temp.pivot_table(index=y, columns=x, values='ID', aggfunc='count', fill_value=0)
-    
-    if pivot.empty:
-        print("Keine Daten für die ausgewählten Variablen.")
-        return
-    
-    sns.heatmap(pivot, annot=True, cmap='coolwarm', fmt='d')
-    plt.xlabel(x)
-    plt.ylabel(y)
-    plt.title(f'Heatmap mit der Anzahl der Krankheitsfälle von {x} vs {y}')
-    plt.show()
-
 def update_scatter_plot(alter_range, geschlecht, beruf, pumpe, haushaltsgröße_kategorie, rohes_gemüse, nächste_pumpe):
     filtered_df = df[(df['Alter'] >= alter_range[0]) & (df['Alter'] <= alter_range[1])]
     
@@ -131,11 +99,6 @@ def update_scatter_plot(alter_range, geschlecht, beruf, pumpe, haushaltsgröße_
 
 display(widgets.interactive(update_bar_chart, 
                             factors=balkendiagramm_faktor_dropdown, 
-                            bins=bin_slider)
-                            )
-display(widgets.interactive(update_heatmap, 
-                            x=heatmap_x_dropdown, 
-                            y=heatmap_y_dropdown, 
                             bins=bin_slider)
                             )
 display(widgets.interactive(update_scatter_plot, 

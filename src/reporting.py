@@ -10,7 +10,7 @@ from src.i18n import translate
 
 
 MAX_REPORT_PLOTS = 4
-SUPPORTED_REPORT_PLOT_TYPES = ("distribution", "heatmap", "scatter")
+SUPPORTED_REPORT_PLOT_TYPES = ("distribution", "scatter")
 REQUIRED_SELECTED_PLOT_KEYS = (
     "plot_id",
     "plot_type",
@@ -24,10 +24,6 @@ REPORT_PLOT_COPY_KEYS = {
     "distribution": {
         "title_msg_id": "distributions.title",
         "caption_msg_id": "distributions.caption",
-    },
-    "heatmap": {
-        "title_msg_id": "heatmap.subtitle",
-        "caption_msg_id": "heatmap.caption",
     },
     "scatter": {
         "title_msg_id": "scatter.subtitle",
