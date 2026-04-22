@@ -1,11 +1,12 @@
 # Simple automation for devs and educators
 
-.PHONY: help dev app notebook clean
+.PHONY: help dev app qr notebook clean
 
 help:
 	@echo "Targets:"
 	@echo "  make dev       - See README for conda/pip setup"
 	@echo "  make app       - Run Streamlit app"
+	@echo "  make qr        - Run Streamlit app and create a same-Wi-Fi QR code"
 	@echo "  make notebook  - Launch Jupyter Lab"
 	@echo "  make clean     - Remove Python caches"
 
@@ -16,6 +17,9 @@ dev:
 
 app:
 	streamlit run app/streamlit_app.py
+
+qr:
+	python scripts/serve_with_qr.py
 
 notebook:
 	jupyter lab

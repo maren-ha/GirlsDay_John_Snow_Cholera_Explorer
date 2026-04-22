@@ -74,7 +74,20 @@ pip install -r requirements.txt
 
 ### Shortcuts
 - `make app` → run the Streamlit app
+- `make qr` → run the Streamlit app for devices on the same Wi-Fi and save a QR code to `assets/app-qr.png`
 - `make notebook` → open Jupyter Lab
 - Or run helper scripts:
   - `./scripts/setup-conda.sh`
   - `./scripts/setup-venv.sh`
+
+## Same-Wi-Fi QR Code
+
+For the simplest classroom setup, keep the teacher computer and student phones on the same Wi-Fi network, then run:
+
+```bash
+make qr
+```
+
+The script starts Streamlit on the local network, prints a URL like `http://192.168.x.x:8501`, and saves a QR code image at `assets/app-qr.png`. Students can scan that QR code and open the app in a browser while the terminal window stays open.
+
+If phones cannot open the page, check that they are on the same Wi-Fi and that the computer firewall allows incoming connections for Python/Streamlit.
