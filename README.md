@@ -91,3 +91,25 @@ make qr
 The script starts Streamlit on the local network, prints a URL like `http://192.168.x.x:8501`, and saves a QR code image at `assets/app-qr.png`. Students can scan that QR code and open the app in a browser while the terminal window stays open.
 
 If phones cannot open the page, check that they are on the same Wi-Fi and that the computer firewall allows incoming connections for Python/Streamlit.
+
+## Public URL with Streamlit Community Cloud
+
+For a stable external URL that students can open from any network, deploy the app with Streamlit Community Cloud:
+
+1. Push the latest `main` branch to GitHub.
+2. Go to [share.streamlit.io](https://share.streamlit.io/) and sign in with GitHub.
+3. Click **Create app**.
+4. Choose **Yup, I have an app**.
+5. Select the repository `maren-ha/GirlsDay_John_Snow_Cholera_Explorer`.
+6. Use branch `main`.
+7. Use entrypoint file `app/streamlit_app.py`.
+8. Optional: choose a memorable app URL, for example `girlsday-cholera`.
+9. Click **Deploy**.
+
+After deployment, create a QR code for the public URL:
+
+```bash
+python scripts/serve_with_qr.py --url https://YOUR-APP-NAME.streamlit.app --qr-path assets/app-qr.png
+```
+
+That QR code works without the teacher computer staying online.

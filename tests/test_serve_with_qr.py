@@ -19,6 +19,19 @@ def test_build_app_url_uses_http_ip_and_port():
     assert qr_script.build_app_url("192.168.1.23", 8501) == "http://192.168.1.23:8501"
 
 
+def test_resolve_qr_url_prefers_explicit_external_url():
+    qr_script = load_qr_script()
+
+    assert (
+        qr_script.resolve_qr_url(
+            external_url="https://girlsday-cholera.streamlit.app",
+            host_ip="192.168.1.23",
+            port=8501,
+        )
+        == "https://girlsday-cholera.streamlit.app"
+    )
+
+
 def test_build_streamlit_command_exposes_app_on_local_network():
     qr_script = load_qr_script()
 

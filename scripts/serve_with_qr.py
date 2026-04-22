@@ -29,6 +29,12 @@ def build_app_url(host_ip, port):
     return f"http://{host_ip}:{port}"
 
 
+def resolve_qr_url(external_url=None, host_ip=None, port=8501):
+    if external_url:
+        return external_url
+    return build_app_url(host_ip or find_lan_ip(), port)
+
+
 def build_streamlit_command(port, address):
     return [
         sys.executable,
@@ -75,6 +81,11 @@ def parse_args():
         help="IP address to encode in the QR code. Auto-detected if omitted.",
     )
     parser.add_argument(
+        "--url",
+        default=None,
+        help="External URL to encode in the QR code, for example a Streamlit Community Cloud URL.",
+    )
+    parser.add_argument(
         "--qr-path",
         default=str(DEFAULT_QR_PATH),
         help="Where to save the QR code PNG.",
@@ -89,14 +100,18 @@ def parse_args():
 
 def main():
     args = parse_args()
-    host_ip = args.host_ip or find_lan_ip()
-    url = build_app_url(host_ip, args.port)
+    url = resolve_qr_url(args.url, args.host_ip, args.port)
     qr_path = write_qr_png(url, args.qr_path)
     command = build_streamlit_command(args.port, args.address)
 
-    print("\nLocal classroom app link")
+    print("\nClassroom app link")
     print(f"URL: {url}")
     print(f"QR code: {qr_path}")
+
+    if args.url:
+        print("\nThis QR code points to an external URL, so students do not need to be on the same Wi-Fi.")
+        return 0
+
     print("\nStudents need to be on the same Wi-Fi/network as this computer.")
     print("If the phone cannot open the link, check macOS firewall and the Wi-Fi network.")
 
