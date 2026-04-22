@@ -11,7 +11,7 @@ help:
 	@echo "  make clean     - Remove Python caches"
 
 dev:
-	@echo "👉 Create the conda env with: conda env create -f environment.yml"
+	@echo "👉 Create the conda env with: conda env create -f conda-environment.yml"
 	@echo "👉 Then activate it:         conda activate cholera-demo"
 	@echo "👉 Or use pip:               python3 -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt"
 

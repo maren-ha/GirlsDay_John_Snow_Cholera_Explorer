@@ -49,7 +49,7 @@ Participants explore, hypothesize, and test ideas about how the disease spreads,
 - `materials`: contains a `Worksheet.md`
 - `scripts`: install helpers using `conda` and `pip` (`setup-conda.sh` and `setup-venv.sh`)
 - `src`: source code: `explore_data.py` and `explore_data_de.py` contain the notebook/widget explorers; `generate_data.py` and `generate_data_de.py` generate the synthetic datasets
-- `environment.yml`: package dependencies; for installing the environment using `conda`
+- `conda-environment.yml`: optional local package dependencies for installing the environment using `conda`
 - `requirements.txt`: package dependencies; for installing the environment using `pip`
 - `LICENSE`: MIT license 
 - `README.md`: this Readme. 
@@ -59,8 +59,8 @@ Participants explore, hypothesize, and test ideas about how the disease spreads,
 
 ### Option A: Conda (recommended on macOS/Apple Silicon)
 ```bash
-conda env create -f environment.yml    # first time
-# or: conda env update -f environment.yml --prune
+conda env create -f conda-environment.yml    # first time
+# or: conda env update -f conda-environment.yml --prune
 conda activate cholera-demo
 ```
 
@@ -113,3 +113,5 @@ python scripts/serve_with_qr.py --url https://YOUR-APP-NAME.streamlit.app --qr-p
 ```
 
 That QR code works without the teacher computer staying online.
+
+Streamlit Community Cloud uses `requirements.txt` for deployment. Keep `conda-environment.yml` under that name so Community Cloud does not try to solve a Conda environment during deployment.
