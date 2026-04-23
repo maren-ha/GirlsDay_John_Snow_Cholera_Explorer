@@ -4,7 +4,7 @@
 
 This app was developed as part of **SmallData’s Girls’ Day initiative** to promote female participation in STEM.  
 It was designed and led by early-career researchers Maria Krissmer, Hannah Habenicht, Masako Kaufmann, and Maren Hackenberg.  
-In this full-day program, eight high-school girls (ages 12–15) explored how data science can be used in biomedicine, culminating in a **“Disease Outbreak Challenge”** where they investigated a simulated epidemic using real-world analysis techniques.
+In this full-day program, eight high-school girls (ages 12–15) explored how data science can be used in biomedicine, including in a **“Disease Outbreak Challenge”** where they investigated a simulated epidemic using real-world analysis techniques.
 
 ## The challenge
 
@@ -92,26 +92,3 @@ The script starts Streamlit on the local network, prints a URL like `http://192.
 
 If phones cannot open the page, check that they are on the same Wi-Fi and that the computer firewall allows incoming connections for Python/Streamlit.
 
-## Public URL with Streamlit Community Cloud
-
-For a stable external URL that students can open from any network, deploy the app with Streamlit Community Cloud:
-
-1. Push the latest `main` branch to GitHub.
-2. Go to [share.streamlit.io](https://share.streamlit.io/) and sign in with GitHub.
-3. Click **Create app**.
-4. Choose **Yup, I have an app**.
-5. Select the repository `maren-ha/GirlsDay_John_Snow_Cholera_Explorer`.
-6. Use branch `main`.
-7. Use entrypoint file `app/streamlit_app.py`.
-8. Optional: choose a memorable app URL, for example `girlsday-cholera`.
-9. Click **Deploy**.
-
-After deployment, create a QR code for the public URL:
-
-```bash
-python scripts/serve_with_qr.py --url https://YOUR-APP-NAME.streamlit.app --qr-path assets/app-qr.png
-```
-
-That QR code works without the teacher computer staying online.
-
-Streamlit Community Cloud uses `requirements.txt` for deployment. Keep `conda-environment.yml` under that name so Community Cloud does not try to solve a Conda environment during deployment.
